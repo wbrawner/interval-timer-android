@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">Trainterval</string>
+    <string name="timer_name">Timer Name</string>
+    <string name="timer_description">Timer Description</string>
+    <string name="low_intensity_duration">Low Intensity Duration</string>
+    <string name="high_intensity_duration">High Intensity Duration</string>
+    <string name="save">Save</string>
+    <string name="sets">Sets</string>
+    <string name="cycles">Cycles</string>
+    <string name="warm_up_duration">Warm-Up Duration</string>
+    <string name="cool_down_duration">Cool-Down Duration</string>
+    <string name="repeat">Repeat</string>
+    <string name="timer_save_success">Successfully saved \'%1$s\' timer</string>
+    <string name="duration_separator">:</string>
+    <string name="skip_previous">Skip Previous</string>
+    <string name="skip_next">Skip Next</string>
+    <string name="start_timer">Start Timer</string>
+    <string name="rest_duration">Rest Duration</string>
+    <string name="title_item_list">Items</string>
+    <string name="title_item_detail">Item Detail</string>
+</resources>

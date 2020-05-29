@@ -1,0 +1,73 @@
+package com.wbrawner.trainterval.timerlist
+
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import com.wbrawner.trainterval.Logger
+import com.wbrawner.trainterval.model.IntervalTimer
+import com.wbrawner.trainterval.model.IntervalTimerDao
+import com.wbrawner.trainterval.timerlist.IntervalTimerListState.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
+
+class TimerListViewModel(
+    private val logger: Logger,
+    val timerDao: IntervalTimerDao
+) : ViewModel() {
+    val timerState: MutableLiveData<IntervalTimerListState> = MutableLiveData(LoadingState)
+    private val timers = ArrayList<IntervalTimer>()
+    private var initialized = false
+
+    fun init() {
+        if (initialized) return
+        initialized = true
+        GlobalScope.launch {
+            timerDao.getAll()
+                .collect {
+                    logger.d(message = "Received updated intervaltimer list")
+                    logger.d(message = it.toString())
+                    timers.clear()
+                    timers.addAll(it)
+                    if (timers.isEmpty()) {
+                        timerState.postValue(EmptyListState)
+                    } else {
+                        timerState.postValue(SuccessListState(timers))
+                    }
+                }
+        }
+    }
+
+    suspend fun addTimer() {
+        timerState.postValue(CreateTimer)
+    }
+
+    suspend fun editTimer(timer: IntervalTimer) {
+
+    }
+
+    suspend fun deleteTimer(timer: IntervalTimer) {
+
+    }
+
+    suspend fun confirmDeleteTimer(timer: IntervalTimer) {
+
+    }
+
+    suspend fun openTimer(timer: IntervalTimer) {
+
+    }
+}
+
+/**
+ * Used to represent each state on the main list view.
+ */
+sealed class IntervalTimerListState {
+    object LoadingState : IntervalTimerListState()
+    object EmptyListState : IntervalTimerListState()
+    data class ConfirmDeleteTimerState(val timer: IntervalTimer) : IntervalTimerListState()
+    data class SuccessListState(val timers: List<IntervalTimer>) : IntervalTimerListState()
+    data class ErrorState(val message: String) : IntervalTimerListState()
+    object CreateTimer : IntervalTimerListState()
+    data class EditTimer(val timer: IntervalTimer) : IntervalTimerListState()
+    data class OpenTimer(val timerId: Long) : IntervalTimerListState()
+}

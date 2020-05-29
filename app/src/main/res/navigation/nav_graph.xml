@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/timerListFragment">
+
+    <fragment
+        android:id="@+id/timerListFragment"
+        android:name="com.wbrawner.trainterval.timerlist.TimerListFragment"
+        android:label="fragment_timer_list"
+        tools:layout="@layout/fragment_timer_list" >
+        <action
+            android:id="@+id/action_timerListFragment_to_activeTimerFragment"
+            app:destination="@id/activeTimerFragment" />
+        <action
+            android:id="@+id/action_timerListFragment_to_timerFormFragment"
+            app:destination="@id/timerFormFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/activeTimerFragment"
+        android:name="com.wbrawner.trainterval.activetimer.ActiveTimerFragment"
+        android:label="fragment_active_timer"
+        tools:layout="@layout/fragment_active_timer" >
+        <argument
+            android:name="timerId"
+            app:argType="long" />
+    </fragment>
+    <fragment
+        android:id="@+id/timerFormFragment"
+        android:name="com.wbrawner.trainterval.timerform.TimerFormFragment"
+        android:label="fragment_timer_form"
+        tools:layout="@layout/fragment_timer_form" />
+</navigation>
