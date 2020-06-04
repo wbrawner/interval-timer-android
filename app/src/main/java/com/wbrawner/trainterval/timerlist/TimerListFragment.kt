@@ -1,6 +1,7 @@
 package com.wbrawner.trainterval.timerlist
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,15 +15,10 @@ import com.wbrawner.trainterval.R
 import com.wbrawner.trainterval.model.IntervalTimer
 import com.wbrawner.trainterval.timerlist.IntervalTimerListState.*
 import kotlinx.android.synthetic.main.fragment_timer_list.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 
 class TimerListFragment : Fragment() {
 
-    private var coroutineScope: CoroutineScope? = null
     private val timerListViewModel: TimerListViewModel by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,7 +33,6 @@ class TimerListFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        coroutineScope = CoroutineScope(Dispatchers.Main)
         (activity as? AppCompatActivity)?.let {
             it.setSupportActionBar(toolbar)
             it.supportActionBar?.setDisplayHomeAsUpEnabled(false)
@@ -49,31 +44,26 @@ class TimerListFragment : Fragment() {
                 LinearLayoutManager.VERTICAL
             )
         )
-        timerList.adapter = TimerListAdapter(timerListViewModel, coroutineScope!!)
+        timerList.adapter = TimerListAdapter(timerListViewModel)
         addTimerButton.setOnClickListener {
-            coroutineScope?.launch {
-                timerListViewModel.addTimer()
+            timerListViewModel.addTimer()
+        }
+        timerListViewModel.timerState.observe(viewLifecycleOwner, Observer { state ->
+            Log.d("TimerListFragment", "Received state $state")
+            when (state) {
+                is LoadingState -> renderLoading()
+                is EmptyListState -> renderEmptyList()
+                is SuccessListState -> renderSuccessState(state.timers)
+                is ErrorState -> renderErrorState(state.message)
+                is CreateTimer -> findNavController().navigate(R.id.timerFormFragment)
+                is EditTimer -> findNavController().navigate(R.id.timerFormFragment)
+                is OpenTimer -> findNavController().navigate(
+                    R.id.activeTimerFragment,
+                    Bundle().apply { putLong("timerId", state.timerId) }
+                )
             }
-        }
-        coroutineScope!!.launch {
-            timerListViewModel.timerState.observe(viewLifecycleOwner, Observer { state ->
-                when (state) {
-                    is LoadingState -> renderLoading()
-                    is EmptyListState -> renderEmptyList()
-                    is SuccessListState -> renderSuccessState(state.timers)
-                    is ErrorState -> renderErrorState(state.message)
-                    is CreateTimer -> findNavController().navigate(R.id.timerFormFragment)
-                    is EditTimer -> findNavController().navigate(R.id.timerFormFragment)
-                    is OpenTimer -> findNavController().navigate(
-                        R.id.activeTimerFragment,
-                        Bundle().apply { putLong("timerId", state.timerId) }
-                    )
-                }
-            })
-        }
-        coroutineScope!!.launch {
-            timerListViewModel.init()
-        }
+        })
+        timerListViewModel.init()
     }
 
     private fun renderLoading() {
@@ -105,11 +95,5 @@ class TimerListFragment : Fragment() {
         error.text = message
         progressBar.visibility = View.GONE
         timerList.visibility = View.GONE
-    }
-
-    override fun onDestroyView() {
-        coroutineScope?.cancel()
-        coroutineScope = null
-        super.onDestroyView()
     }
 }

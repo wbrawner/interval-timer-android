@@ -2,6 +2,7 @@ package com.wbrawner.trainterval.timerform
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
@@ -22,6 +23,18 @@ class TimerFormFragment : Fragment() {
 
     private var coroutineScope: CoroutineScope? = null
     private val timerFormViewModel: TimerFormViewModel by inject()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean =
+        if (item.itemId == android.R.id.home) {
+            findNavController().navigateUp()
+        } else {
+            super.onOptionsItemSelected(item)
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

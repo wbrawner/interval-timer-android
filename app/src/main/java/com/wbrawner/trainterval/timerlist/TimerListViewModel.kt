@@ -37,8 +37,13 @@ class TimerListViewModel(
         }
     }
 
-    suspend fun addTimer() {
-        timerState.postValue(CreateTimer)
+    fun addTimer() {
+        timerState.value = CreateTimer
+        if (timers.isEmpty()) {
+            timerState.postValue(EmptyListState)
+        } else {
+            timerState.postValue(SuccessListState(timers))
+        }
     }
 
     suspend fun editTimer(timer: IntervalTimer) {
@@ -53,8 +58,13 @@ class TimerListViewModel(
 
     }
 
-    suspend fun openTimer(timer: IntervalTimer) {
-
+    fun openTimer(timer: IntervalTimer) {
+        timerState.value = OpenTimer(timer.id!!)
+        if (timers.isEmpty()) {
+            timerState.postValue(EmptyListState)
+        } else {
+            timerState.postValue(SuccessListState(timers))
+        }
     }
 }
 

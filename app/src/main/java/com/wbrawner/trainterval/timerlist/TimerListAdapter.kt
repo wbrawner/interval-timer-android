@@ -8,12 +8,9 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.wbrawner.trainterval.model.IntervalTimer
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 
 class TimerListAdapter(
-    private val timerListViewModel: TimerListViewModel,
-    private val coroutineScope: CoroutineScope
+    private val timerListViewModel: TimerListViewModel
 ) : ListAdapter<IntervalTimer, TimerListAdapter.ViewHolder>(IntervalTimerDiffUtilCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = ViewHolder(
@@ -26,9 +23,7 @@ class TimerListAdapter(
         holder.title.text = timer.name
         holder.description.text = timer.description
         holder.itemView.setOnClickListener {
-            coroutineScope.launch {
-                timerListViewModel.openTimer(timer)
-            }
+            timerListViewModel.openTimer(timer)
         }
     }
 

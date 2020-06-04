@@ -2,8 +2,10 @@ package com.wbrawner.trainterval.activetimer
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
@@ -24,7 +26,15 @@ class ActiveTimerFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         timerId = requireArguments().getLong("timerId")
+        setHasOptionsMenu(true)
     }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean =
+        if (item.itemId == android.R.id.home) {
+            findNavController().navigateUp()
+        } else {
+            super.onOptionsItemSelected(item)
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -33,6 +43,10 @@ class ActiveTimerFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        (activity as? AppCompatActivity)?.let {
+            it.setSupportActionBar(toolbar)
+            it.supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        }
         coroutineScope = CoroutineScope(Dispatchers.Main)
         coroutineScope!!.launch {
             activeTimerViewModel.timerState.observe(viewLifecycleOwner, Observer { state ->
@@ -42,13 +56,21 @@ class ActiveTimerFragment : Fragment() {
                     is IntervalTimerActiveState.ExitState -> findNavController().navigateUp()
                 }
             })
-        }
-        coroutineScope!!.launch {
             activeTimerViewModel.init(timerId)
+        }
+        skipPreviousButton.setOnClickListener {
+            coroutineScope!!.launch {
+                activeTimerViewModel.goBack()
+            }
         }
         playPauseButton.setOnClickListener {
             coroutineScope!!.launch {
                 activeTimerViewModel.toggleTimer()
+            }
+        }
+        skipNextButton.setOnClickListener {
+            coroutineScope!!.launch {
+                activeTimerViewModel.skipAhead()
             }
         }
     }

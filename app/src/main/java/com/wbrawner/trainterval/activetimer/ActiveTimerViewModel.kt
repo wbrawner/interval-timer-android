@@ -12,7 +12,6 @@ import com.wbrawner.trainterval.model.IntervalTimerDao
 import com.wbrawner.trainterval.model.Phase
 import com.wbrawner.trainterval.toIntervalDuration
 import kotlinx.coroutines.*
-import kotlin.coroutines.coroutineContext
 
 class ActiveTimerViewModel(
     private val logger: Logger,
@@ -59,42 +58,42 @@ class ActiveTimerViewModel(
                 )
             )
         } else {
-            coroutineScope {
-                timerJob = launch {
-                    startTimer()
-                }
-            }
+            startTimer()
         }
     }
 
     private suspend fun startTimer() {
-        timerRunning = true
-        timerState.postValue(
-            TimerRunningState(
-                timerRunning,
-                timeRemaining.toIntervalDuration().toString(),
-                currentSet,
-                timer.sets,
-                currentRound,
-                timer.cycles
-            )
-        )
-        while (coroutineContext.isActive && timerRunning) {
-            delay(1_000)
-            timeRemaining -= 1_000
-            if (timeRemaining <= 0) {
-                goForward()
-            }
-            timerState.postValue(
-                TimerRunningState(
-                    timerRunning,
-                    timeRemaining.toIntervalDuration().toString(),
-                    currentSet,
-                    timer.sets,
-                    currentRound,
-                    timer.cycles
+        coroutineScope {
+            timerJob = launch {
+                timerRunning = true
+                timerState.postValue(
+                    TimerRunningState(
+                        timerRunning,
+                        timeRemaining.toIntervalDuration().toString(),
+                        currentSet,
+                        timer.sets,
+                        currentRound,
+                        timer.cycles
+                    )
                 )
-            )
+                while (coroutineContext.isActive && timerRunning) {
+                    delay(1_000)
+                    timeRemaining -= 1_000
+                    if (timeRemaining <= 0) {
+                        goForward()
+                    }
+                    timerState.postValue(
+                        TimerRunningState(
+                            timerRunning,
+                            timeRemaining.toIntervalDuration().toString(),
+                            currentSet,
+                            timer.sets,
+                            currentRound,
+                            timer.cycles
+                        )
+                    )
+                }
+            }
         }
     }
 
