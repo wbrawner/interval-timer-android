@@ -34,37 +34,65 @@
         android:id="@+id/timerLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:constraint_referenced_ids="playPauseButton,timerSets,timerRounds,timeRemaining,skipNextButton,skipPreviousButton" />
+        app:constraint_referenced_ids="playPauseButton,setsContainer,roundsContainer,timeRemaining,skipNextButton,skipPreviousButton" />
 
-    <TextView
-        android:id="@+id/timerSets"
+    <LinearLayout
+        android:id="@+id/setsContainer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
         android:padding="16dp"
-        android:textAppearance="@style/TextAppearance.MaterialComponents.Headline5"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/timerRounds"
+        app:layout_constraintEnd_toStartOf="@+id/roundsContainer"
         app:layout_constraintHorizontal_chainStyle="spread_inside"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:text="Set: 4/5" />
+        app:layout_constraintStart_toStartOf="parent">
 
-    <TextView
-        android:id="@+id/timerRounds"
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/label_set"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6" />
+
+        <TextView
+            android:id="@+id/timerSets"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Headline5"
+            tools:text="5" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/roundsContainer"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
         android:padding="16dp"
-        android:textAppearance="@style/TextAppearance.MaterialComponents.Headline5"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/timerSets"
-        tools:text="Round: 4/5" />
+        app:layout_constraintStart_toEndOf="@+id/setsContainer">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/label_round"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6" />
+
+        <TextView
+            android:id="@+id/timerRounds"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Headline5"
+            tools:text="4" />
+    </LinearLayout>
 
     <androidx.constraintlayout.widget.Barrier
         android:id="@+id/timerInfo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:barrierDirection="top"
-        app:constraint_referenced_ids="timerSets,timerRounds" />
+        app:constraint_referenced_ids="setsContainer,roundsContainer" />
 
     <TextView
         android:id="@+id/timeRemaining"
@@ -72,7 +100,7 @@
         android:layout_height="wrap_content"
         android:fontFamily="monospace"
         android:textAlignment="center"
-        android:textAppearance="@style/TextAppearance.MaterialComponents.Headline2"
+        android:textAppearance="@style/TextAppearance.MaterialComponents.Headline1"
         android:textColor="@color/colorOnSurface"
         app:layout_constraintBottom_toTopOf="@+id/playPauseButton"
         app:layout_constraintEnd_toEndOf="parent"
@@ -83,8 +111,8 @@
 
     <ImageButton
         android:id="@+id/skipPreviousButton"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
         android:backgroundTint="@android:color/transparent"
         android:contentDescription="@string/skip_previous"
         android:scaleType="fitCenter"
@@ -98,8 +126,8 @@
 
     <ImageButton
         android:id="@+id/playPauseButton"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
         android:backgroundTint="@android:color/transparent"
         android:contentDescription="@string/start_timer"
         android:scaleType="fitCenter"
@@ -111,8 +139,8 @@
 
     <ImageButton
         android:id="@+id/skipNextButton"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
         android:backgroundTint="@android:color/transparent"
         android:contentDescription="@string/skip_next"
         android:scaleType="fitCenter"

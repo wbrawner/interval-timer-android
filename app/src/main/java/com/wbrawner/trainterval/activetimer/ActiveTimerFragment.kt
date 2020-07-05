@@ -92,16 +92,8 @@ class ActiveTimerFragment : Fragment() {
         timerBackground.setBackgroundColor(backgroundColor)
         playPauseButton.setImageDrawable(requireContext().getDrawable(state.playPauseIcon))
         timeRemaining.text = state.timeRemaining
-        timerSets.text = getString(
-            R.string.timer_sets_formatted,
-            state.currentSet,
-            state.totalSets
-        )
-        timerRounds.text = getString(
-            R.string.timer_rounds_formatted,
-            state.currentRound,
-            state.totalRounds
-        )
+        timerSets.text = state.currentSet.toString()
+        timerRounds.text = state.currentRound.toString()
     }
 
     override fun onDestroyView() {

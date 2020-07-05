@@ -20,4 +20,6 @@
     <string name="title_item_detail">Item Detail</string>
     <string name="timer_sets_formatted">Set: %1$d/%2$d</string>
     <string name="timer_rounds_formatted">Round: %1$d/%2$d</string>
+    <string name="label_set">Set</string>
+    <string name="label_round">Round</string>
 </resources>

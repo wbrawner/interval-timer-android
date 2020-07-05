@@ -38,7 +38,10 @@ class ActiveTimerViewModel : ViewModel() {
         if (timerJob == null || timer.id != timerId) {
             logger.d(message = "Initializing with Timer id $timerId")
             timer = timerDao.getById(timerId)
+            currentSet = timer.sets
+            currentRound = timer.cycles
             timeRemaining = timer.warmUpDuration
+            currentPhase = Phase.WARM_UP
             timerState.postValue(
                 TimerRunningState(
                     timer,
@@ -132,13 +135,13 @@ class ActiveTimerViewModel : ViewModel() {
             }
             Phase.HIGH_INTENSITY -> {
                 when {
-                    currentSet < timer.sets -> {
-                        currentSet++
+                    currentSet > 1 -> {
+                        currentSet--
                         currentPhase = Phase.LOW_INTENSITY
                         timeRemaining = timer.lowIntensityDuration
                     }
-                    currentRound < timer.cycles -> {
-                        currentRound++
+                    currentRound > 1 -> {
+                        currentRound--
                         currentPhase = Phase.REST
                         timeRemaining = timer.restDuration
                     }
@@ -149,7 +152,7 @@ class ActiveTimerViewModel : ViewModel() {
                 }
             }
             Phase.REST -> {
-                currentSet = 1
+                currentSet = timer.sets
                 currentPhase = Phase.LOW_INTENSITY
                 timeRemaining = timer.lowIntensityDuration
             }
@@ -169,16 +172,16 @@ class ActiveTimerViewModel : ViewModel() {
             }
             Phase.LOW_INTENSITY -> {
                 when {
-                    currentSet == 1 && currentRound == 1 -> {
+                    currentSet == timer.sets && currentRound == timer.cycles -> {
                         currentPhase = Phase.WARM_UP
                         timeRemaining = timer.warmUpDuration
                     }
-                    currentSet == 1 && currentRound > 1 -> {
+                    currentSet == timer.sets && currentRound < timer.cycles -> {
                         currentPhase = Phase.REST
                         timeRemaining = timer.restDuration
                     }
                     else -> {
-                        currentSet--
+                        currentSet++
                         currentPhase = Phase.HIGH_INTENSITY
                         timeRemaining = timer.highIntensityDuration
                     }
@@ -189,7 +192,7 @@ class ActiveTimerViewModel : ViewModel() {
                 timeRemaining = timer.lowIntensityDuration
             }
             Phase.REST -> {
-                currentRound--
+                currentRound++
                 currentPhase = Phase.HIGH_INTENSITY
                 currentSet = timer.sets
                 timeRemaining = timer.highIntensityDuration
@@ -216,9 +219,7 @@ sealed class IntervalTimerActiveState {
         val timerName: String,
         val timeRemaining: String,
         val currentSet: Int,
-        val totalSets: Int,
         val currentRound: Int,
-        val totalRounds: Int,
         @ColorRes val timerBackground: Int,
         @DrawableRes val playPauseIcon: Int
     ) : IntervalTimerActiveState() {
@@ -234,8 +235,6 @@ sealed class IntervalTimerActiveState {
             timeRemaining = timeRemaining.toIntervalDuration().toString(),
             currentSet = currentSet,
             currentRound = currentRound,
-            totalSets = timer.sets,
-            totalRounds = timer.cycles,
             timerBackground = phase.colorRes,
             playPauseIcon = if (timerRunning) R.drawable.ic_pause else R.drawable.ic_play_arrow
         )
