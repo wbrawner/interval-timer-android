@@ -1,8 +1,10 @@
 package com.wbrawner.trainterval.activetimer
 
+import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.wbrawner.trainterval.Logger
 import com.wbrawner.trainterval.R
 import com.wbrawner.trainterval.activetimer.IntervalTimerActiveState.LoadingState
@@ -11,93 +13,83 @@ import com.wbrawner.trainterval.model.IntervalTimer
 import com.wbrawner.trainterval.model.IntervalTimerDao
 import com.wbrawner.trainterval.model.Phase
 import com.wbrawner.trainterval.toIntervalDuration
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
-class ActiveTimerViewModel(
-    private val logger: Logger,
-    private val timerDao: IntervalTimerDao
-) : ViewModel() {
+class ActiveTimerViewModel : ViewModel() {
     val timerState: MutableLiveData<IntervalTimerActiveState> = MutableLiveData(LoadingState)
     private var timerJob: Job? = null
     private lateinit var timer: IntervalTimer
+    private lateinit var logger: Logger
     private var timerComplete = false
-    private var timerRunning = false
     private var currentPhase = Phase.WARM_UP
     private var currentSet = 1
     private var currentRound = 1
     private var timeRemaining: Long = 0
 
-    suspend fun init(timerId: Long) {
-        logger.d(message = "Initializing with Timer id $timerId")
-        timer = timerDao.getById(timerId)
-        timeRemaining = timer.warmUpDuration
-        timerState.postValue(
-            TimerRunningState(
-                timerRunning,
-                timeRemaining.toIntervalDuration().toString(),
-                currentSet,
-                timer.sets,
-                currentRound,
-                timer.cycles
-            )
-        )
-    }
-
-    suspend fun toggleTimer() {
-        if (timerRunning) {
-            timerJob?.cancel()
-            timerRunning = false
+    suspend fun init(
+        logger: Logger,
+        timerDao: IntervalTimerDao,
+        timerId: Long
+    ) {
+        this.logger = logger
+        if (timerJob == null || timer.id != timerId) {
+            logger.d(message = "Initializing with Timer id $timerId")
+            timer = timerDao.getById(timerId)
+            timeRemaining = timer.warmUpDuration
             timerState.postValue(
                 TimerRunningState(
-                    timerRunning,
-                    timeRemaining.toIntervalDuration().toString(),
+                    timer,
+                    timeRemaining,
                     currentSet,
-                    timer.sets,
                     currentRound,
-                    timer.cycles
+                    currentPhase,
+                    timerJob != null
                 )
             )
-        } else {
-            startTimer()
         }
     }
 
-    private suspend fun startTimer() {
-        coroutineScope {
-            timerJob = launch {
-                timerRunning = true
-                timerState.postValue(
-                    TimerRunningState(
-                        timerRunning,
-                        timeRemaining.toIntervalDuration().toString(),
-                        currentSet,
-                        timer.sets,
-                        currentRound,
-                        timer.cycles
-                    )
+    fun toggleTimer() {
+        if (timerJob != null) {
+            timerJob?.cancel()
+            timerJob = null
+            timerState.postValue(
+                TimerRunningState(
+                    timer,
+                    timeRemaining,
+                    currentSet,
+                    currentRound,
+                    currentPhase,
+                    timerJob != null
                 )
-                while (coroutineContext.isActive && timerRunning) {
+            )
+        } else {
+            viewModelScope.launch {
+                startTimer()
+            }
+        }
+    }
+
+    private fun startTimer() {
+        viewModelScope.launch {
+            timerJob = launch {
+                updateTimer()
+                while (coroutineContext.isActive && timerJob != null) {
                     delay(1_000)
                     timeRemaining -= 1_000
                     if (timeRemaining <= 0) {
                         goForward()
                     }
-                    timerState.postValue(
-                        TimerRunningState(
-                            timerRunning,
-                            timeRemaining.toIntervalDuration().toString(),
-                            currentSet,
-                            timer.sets,
-                            currentRound,
-                            timer.cycles
-                        )
-                    )
+                    updateTimer()
                 }
             }
         }
     }
 
-    suspend fun skipAhead() {
+    fun skipAhead() {
         timerJob?.cancel()
         when (currentPhase) {
             Phase.COOL_DOWN -> {
@@ -107,9 +99,24 @@ class ActiveTimerViewModel(
                 goForward()
             }
         }
-        if (timerRunning) {
+        if (timerJob != null) {
             startTimer()
+        } else {
+            updateTimer()
         }
+    }
+
+    private fun updateTimer() {
+        timerState.postValue(
+            TimerRunningState(
+                timer,
+                timeRemaining,
+                currentSet,
+                currentRound,
+                currentPhase,
+                timerJob != null
+            )
+        )
     }
 
     private fun goForward() {
@@ -147,12 +154,14 @@ class ActiveTimerViewModel(
                 timeRemaining = timer.lowIntensityDuration
             }
             Phase.COOL_DOWN -> {
-                timerRunning = false
+                timeRemaining = 0
+                timerJob?.cancel()
+                timerJob = null
             }
         }
     }
 
-    suspend fun goBack() {
+    fun goBack() {
         timerJob?.cancel()
         when (currentPhase) {
             Phase.WARM_UP -> {
@@ -169,11 +178,11 @@ class ActiveTimerViewModel(
                         timeRemaining = timer.restDuration
                     }
                     else -> {
+                        currentSet--
                         currentPhase = Phase.HIGH_INTENSITY
                         timeRemaining = timer.highIntensityDuration
                     }
                 }
-                timeRemaining = timer.highIntensityDuration
             }
             Phase.HIGH_INTENSITY -> {
                 currentPhase = Phase.LOW_INTENSITY
@@ -190,8 +199,10 @@ class ActiveTimerViewModel(
                 timeRemaining = timer.highIntensityDuration
             }
         }
-        if (timerRunning) {
+        if (timerJob != null) {
             startTimer()
+        } else {
+            updateTimer()
         }
     }
 }
@@ -202,14 +213,33 @@ class ActiveTimerViewModel(
 sealed class IntervalTimerActiveState {
     object LoadingState : IntervalTimerActiveState()
     class TimerRunningState(
-        timerRunning: Boolean,
+        val timerName: String,
         val timeRemaining: String,
         val currentSet: Int,
         val totalSets: Int,
         val currentRound: Int,
         val totalRounds: Int,
-        val timerComplete: Boolean = false,
-        @DrawableRes val playPauseIcon: Int = if (timerRunning) R.drawable.ic_pause else R.drawable.ic_play_arrow
-    ) : IntervalTimerActiveState()
+        @ColorRes val timerBackground: Int,
+        @DrawableRes val playPauseIcon: Int
+    ) : IntervalTimerActiveState() {
+        constructor(
+            timer: IntervalTimer,
+            timeRemaining: Long,
+            currentSet: Int,
+            currentRound: Int,
+            phase: Phase,
+            timerRunning: Boolean
+        ) : this(
+            timerName = timer.name,
+            timeRemaining = timeRemaining.toIntervalDuration().toString(),
+            currentSet = currentSet,
+            currentRound = currentRound,
+            totalSets = timer.sets,
+            totalRounds = timer.cycles,
+            timerBackground = phase.colorRes,
+            playPauseIcon = if (timerRunning) R.drawable.ic_pause else R.drawable.ic_play_arrow
+        )
+    }
+
     object ExitState : IntervalTimerActiveState()
 }

@@ -6,6 +6,7 @@
     android:animateLayoutChanges="true"
     android:clipChildren="false"
     android:clipToPadding="false"
+    android:fitsSystemWindows="true"
     android:orientation="vertical"
     tools:context="com.wbrawner.trainterval.timerlist.TimerListFragment">
 

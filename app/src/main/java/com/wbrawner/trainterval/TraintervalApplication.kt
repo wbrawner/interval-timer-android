@@ -2,7 +2,6 @@ package com.wbrawner.trainterval
 
 import android.app.Application
 import androidx.room.Room
-import com.wbrawner.trainterval.activetimer.ActiveTimerViewModel
 import com.wbrawner.trainterval.timerform.TimerFormViewModel
 import com.wbrawner.trainterval.timerlist.TimerListViewModel
 import org.koin.android.ext.koin.androidContext
@@ -44,10 +43,6 @@ val traintervalModule = module {
 
     factory {
         TimerFormViewModel(get(parameters = { parametersOf("TimerFormStore") }), get())
-    }
-
-    factory {
-        ActiveTimerViewModel(get(parameters = { parametersOf("ActiveTimerStore") }), get())
     }
 
     factory<Logger> { params ->

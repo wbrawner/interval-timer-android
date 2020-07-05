@@ -1,6 +1,8 @@
 package com.wbrawner.trainterval.model
 
+import androidx.annotation.ColorRes
 import androidx.room.*
+import com.wbrawner.trainterval.R
 import kotlinx.coroutines.flow.Flow
 import java.util.concurrent.TimeUnit
 
@@ -18,12 +20,12 @@ data class IntervalTimer(
     val cycles: Int = 1
 )
 
-enum class Phase {
-    WARM_UP,
-    LOW_INTENSITY,
-    HIGH_INTENSITY,
-    REST,
-    COOL_DOWN,
+enum class Phase(@ColorRes val colorRes: Int) {
+    WARM_UP(R.color.colorSurface),
+    LOW_INTENSITY(R.color.colorSurfaceLowIntensity),
+    HIGH_INTENSITY(R.color.colorSurfaceHighIntensity),
+    REST(R.color.colorSurfaceRest),
+    COOL_DOWN(R.color.colorSurfaceCoolDown),
 }
 
 @Dao

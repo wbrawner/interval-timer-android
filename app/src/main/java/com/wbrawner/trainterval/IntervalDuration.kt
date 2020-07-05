@@ -9,7 +9,8 @@ data class IntervalDuration(
     val seconds: Long = 0
 ) {
     override fun toString(): String {
-        return "%02d:%02d:%02d".format(hours, minutes, seconds)
+        return if (hours > 0) "%02d:%02d:%02d".format(hours, minutes, seconds)
+        else "%02d:%02d".format(minutes, seconds)
     }
 }
 
@@ -19,9 +20,10 @@ fun IntervalDuration.toMillis(): Long {
             TimeUnit.SECONDS.toMillis(seconds)
 }
 
+private const val SECONDS_IN_HOUR = 3600
+private const val SECONDS_IN_MINUTE = 60
+
 fun Long.toIntervalDuration(): IntervalDuration {
-    val SECONDS_IN_HOUR = 3600
-    val SECONDS_IN_MINUTE = 60
 
     if (this < 1000) {
         return IntervalDuration(0, 0, 0)
