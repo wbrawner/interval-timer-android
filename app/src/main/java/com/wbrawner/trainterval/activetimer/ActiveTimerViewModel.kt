@@ -42,16 +42,7 @@ class ActiveTimerViewModel : ViewModel() {
             currentRound = timer.cycles
             timeRemaining = timer.warmUpDuration
             currentPhase = Phase.WARM_UP
-            timerState.postValue(
-                TimerRunningState(
-                    timer,
-                    timeRemaining,
-                    currentSet,
-                    currentRound,
-                    currentPhase,
-                    timerJob != null
-                )
-            )
+            updateTimer()
         }
     }
 
@@ -220,6 +211,7 @@ sealed class IntervalTimerActiveState {
         val timeRemaining: String,
         val currentSet: Int,
         val currentRound: Int,
+        val soundId: Int?,
         @ColorRes val timerBackground: Int,
         @DrawableRes val playPauseIcon: Int
     ) : IntervalTimerActiveState() {
@@ -236,6 +228,9 @@ sealed class IntervalTimerActiveState {
             currentSet = currentSet,
             currentRound = currentRound,
             timerBackground = phase.colorRes,
+            soundId = if (timerRunning && timeRemaining == timer.durationForPhase(phase))
+                phase.ordinal
+            else null,
             playPauseIcon = if (timerRunning) R.drawable.ic_pause else R.drawable.ic_play_arrow
         )
     }

@@ -52,13 +52,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/label_set"
-            android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6" />
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
+            android:textColor="@color/colorOnSurface" />
 
         <TextView
             android:id="@+id/timerSets"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="@style/TextAppearance.MaterialComponents.Headline5"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Headline3"
+            android:textColor="@color/colorOnSurface"
             tools:text="5" />
     </LinearLayout>
 
@@ -77,13 +79,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/label_round"
-            android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6" />
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
+            android:textColor="@color/colorOnSurface" />
 
         <TextView
             android:id="@+id/timerRounds"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="@style/TextAppearance.MaterialComponents.Headline5"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Headline3"
+            android:textColor="@color/colorOnSurface"
             tools:text="4" />
     </LinearLayout>
 
