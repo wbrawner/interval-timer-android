@@ -2,6 +2,7 @@ package com.wbrawner.trainterval.activetimer
 
 import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -212,6 +213,7 @@ sealed class IntervalTimerActiveState {
         val currentSet: Int,
         val currentRound: Int,
         val soundId: Int?,
+        @StringRes val phase: Int,
         @ColorRes val timerBackground: Int,
         @DrawableRes val playPauseIcon: Int
     ) : IntervalTimerActiveState() {
@@ -224,6 +226,7 @@ sealed class IntervalTimerActiveState {
             timerRunning: Boolean
         ) : this(
             timerName = timer.name,
+            phase = phase.stringRes,
             timeRemaining = timeRemaining.toIntervalDuration().toString(),
             currentSet = currentSet,
             currentRound = currentRound,

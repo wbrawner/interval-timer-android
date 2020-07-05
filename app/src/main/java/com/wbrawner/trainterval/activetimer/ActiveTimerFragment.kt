@@ -112,6 +112,7 @@ class ActiveTimerFragment : Fragment() {
         val backgroundColor = resources.getColor(state.timerBackground, context?.theme)
         timerBackground.setBackgroundColor(backgroundColor)
         playPauseButton.setImageDrawable(requireContext().getDrawable(state.playPauseIcon))
+        timerPhase.text = getString(state.phase)
         timeRemaining.text = state.timeRemaining
         timerSets.text = state.currentSet.toString()
         timerRounds.text = state.currentRound.toString()

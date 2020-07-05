@@ -1,6 +1,7 @@
 package com.wbrawner.trainterval.model
 
 import androidx.annotation.ColorRes
+import androidx.annotation.StringRes
 import androidx.room.*
 import com.wbrawner.trainterval.R
 import kotlinx.coroutines.flow.Flow
@@ -30,13 +31,14 @@ data class IntervalTimer(
 
 enum class Phase(
     @ColorRes val colorRes: Int,
+    @StringRes val stringRes: Int,
     val soundFile: String
 ) {
-    WARM_UP(R.color.colorSurface, "warm.mp3"),
-    LOW_INTENSITY(R.color.colorSurfaceLowIntensity, "low.mp3"),
-    HIGH_INTENSITY(R.color.colorSurfaceHighIntensity, "high.mp3"),
-    REST(R.color.colorSurfaceRest, "rest.mp3"),
-    COOL_DOWN(R.color.colorSurfaceCoolDown, "cool.mp3"),
+    WARM_UP(R.color.colorSurface, R.string.phase_warm_up, "warm.mp3"),
+    LOW_INTENSITY(R.color.colorSurfaceLowIntensity, R.string.phase_low_intensity, "low.mp3"),
+    HIGH_INTENSITY(R.color.colorSurfaceHighIntensity, R.string.phase_high_intensity, "high.mp3"),
+    REST(R.color.colorSurfaceRest, R.string.phase_rest, "rest.mp3"),
+    COOL_DOWN(R.color.colorSurfaceCoolDown, R.string.phase_cool_down, "cool.mp3"),
 }
 
 @Dao
