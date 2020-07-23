@@ -27,6 +27,11 @@ data class IntervalTimer(
         Phase.REST -> restDuration
         Phase.COOL_DOWN -> coolDownDuration
     }
+
+    val totalDuration: Long
+        get() = warmUpDuration + coolDownDuration + (
+                (lowIntensityDuration + highIntensityDuration) * sets * cycles
+                ) + (restDuration * cycles) - restDuration
 }
 
 enum class Phase(

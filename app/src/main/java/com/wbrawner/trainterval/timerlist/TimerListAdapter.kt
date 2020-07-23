@@ -7,7 +7,9 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.wbrawner.trainterval.R
 import com.wbrawner.trainterval.model.IntervalTimer
+import com.wbrawner.trainterval.toIntervalDuration
 
 class TimerListAdapter(
     private val timerListViewModel: TimerListViewModel
@@ -15,21 +17,28 @@ class TimerListAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = ViewHolder(
         LayoutInflater.from(parent.context)
-            .inflate(android.R.layout.simple_list_item_2, parent, false)
+            .inflate(R.layout.list_item_timer, parent, false)
     )
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val timer = getItem(position)
         holder.title.text = timer.name
-        holder.description.text = timer.description
+        if (timer.description.isBlank()) {
+            holder.description.visibility = View.GONE
+        } else {
+            holder.description.visibility = View.VISIBLE
+            holder.description.text = timer.description
+        }
+        holder.duration.text = timer.totalDuration.toIntervalDuration().toString()
         holder.itemView.setOnClickListener {
             timerListViewModel.openTimer(timer)
         }
     }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val title: TextView = itemView.findViewById(android.R.id.text1)
-        val description: TextView = itemView.findViewById(android.R.id.text2)
+        val title: TextView = itemView.findViewById(R.id.title)
+        val description: TextView = itemView.findViewById(R.id.description)
+        val duration: TextView = itemView.findViewById(R.id.duration)
     }
 }
 
