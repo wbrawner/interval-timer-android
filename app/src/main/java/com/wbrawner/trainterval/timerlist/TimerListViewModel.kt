@@ -3,8 +3,8 @@ package com.wbrawner.trainterval.timerlist
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.wbrawner.trainterval.Logger
-import com.wbrawner.trainterval.model.IntervalTimer
-import com.wbrawner.trainterval.model.IntervalTimerDao
+import com.wbrawner.trainterval.shared.IntervalTimer
+import com.wbrawner.trainterval.shared.IntervalTimerDao
 import com.wbrawner.trainterval.timerlist.IntervalTimerListState.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.collect

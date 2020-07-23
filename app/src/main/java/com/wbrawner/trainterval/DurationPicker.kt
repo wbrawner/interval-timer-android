@@ -9,6 +9,9 @@ import android.widget.NumberPicker
 import androidx.annotation.AttrRes
 import androidx.annotation.StyleRes
 import androidx.core.math.MathUtils
+import com.wbrawner.trainterval.shared.IntervalDuration
+import com.wbrawner.trainterval.shared.toIntervalDuration
+import com.wbrawner.trainterval.shared.toMillis
 import java.util.concurrent.TimeUnit
 
 private const val MIN_DURATION = 0L
@@ -21,11 +24,13 @@ class DurationPicker @JvmOverloads constructor(
     @StyleRes defStyleRes: Int = 0
 ) : FrameLayout(context, attrs, defStyleAttr, defStyleRes) {
 
-    private var intervalDuration = IntervalDuration()
+    private var intervalDuration =
+        IntervalDuration()
     var duration: Long
         get() = intervalDuration.toMillis()
         set(value) {
-            intervalDuration = MathUtils.clamp(value, MIN_DURATION, MAX_DURATION).toIntervalDuration()
+            intervalDuration =
+                MathUtils.clamp(value, MIN_DURATION, MAX_DURATION).toIntervalDuration()
             hours.value = intervalDuration.hours.toInt()
             minutes.value = intervalDuration.minutes.toInt()
             seconds.value = intervalDuration.seconds.toInt()

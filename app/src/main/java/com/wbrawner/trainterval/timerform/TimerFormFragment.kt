@@ -10,7 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.wbrawner.trainterval.R
-import com.wbrawner.trainterval.model.IntervalTimer
+import com.wbrawner.trainterval.shared.IntervalTimer
 import com.wbrawner.trainterval.timerform.IntervalTimerEditState.*
 import kotlinx.android.synthetic.main.fragment_timer_form.*
 import kotlinx.coroutines.CoroutineScope

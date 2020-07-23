@@ -12,7 +12,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.wbrawner.trainterval.R
-import com.wbrawner.trainterval.model.IntervalTimer
+import com.wbrawner.trainterval.shared.IntervalTimer
 import com.wbrawner.trainterval.timerlist.IntervalTimerListState.*
 import kotlinx.android.synthetic.main.fragment_timer_list.*
 import org.koin.android.ext.android.inject

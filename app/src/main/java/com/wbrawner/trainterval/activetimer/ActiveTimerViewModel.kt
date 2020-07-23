@@ -1,26 +1,22 @@
 package com.wbrawner.trainterval.activetimer
 
-import androidx.annotation.ColorRes
-import androidx.annotation.DrawableRes
-import androidx.annotation.StringRes
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wbrawner.trainterval.Logger
-import com.wbrawner.trainterval.R
-import com.wbrawner.trainterval.activetimer.IntervalTimerActiveState.LoadingState
-import com.wbrawner.trainterval.activetimer.IntervalTimerActiveState.TimerRunningState
-import com.wbrawner.trainterval.model.IntervalTimer
-import com.wbrawner.trainterval.model.IntervalTimerDao
-import com.wbrawner.trainterval.model.Phase
-import com.wbrawner.trainterval.toIntervalDuration
+import com.wbrawner.trainterval.shared.IntervalTimer
+import com.wbrawner.trainterval.shared.IntervalTimerDao
+import com.wbrawner.trainterval.shared.IntervalTimerState
+import com.wbrawner.trainterval.shared.IntervalTimerState.LoadingState
+import com.wbrawner.trainterval.shared.IntervalTimerState.TimerRunningState
+import com.wbrawner.trainterval.shared.Phase
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 class ActiveTimerViewModel : ViewModel() {
-    val timerState: MutableLiveData<IntervalTimerActiveState> = MutableLiveData(LoadingState)
+    val timerState: MutableLiveData<IntervalTimerState> = MutableLiveData(LoadingState)
     private var timerJob: Job? = null
     private lateinit var timer: IntervalTimer
     private lateinit var logger: Logger
@@ -200,43 +196,4 @@ class ActiveTimerViewModel : ViewModel() {
             updateTimer()
         }
     }
-}
-
-/**
- * Used to represent the state while a user has a specific timer open.
- */
-sealed class IntervalTimerActiveState {
-    object LoadingState : IntervalTimerActiveState()
-    class TimerRunningState(
-        val timerName: String,
-        val timeRemaining: String,
-        val currentSet: Int,
-        val currentRound: Int,
-        val soundId: Int?,
-        @StringRes val phase: Int,
-        @ColorRes val timerBackground: Int,
-        @DrawableRes val playPauseIcon: Int
-    ) : IntervalTimerActiveState() {
-        constructor(
-            timer: IntervalTimer,
-            timeRemaining: Long,
-            currentSet: Int,
-            currentRound: Int,
-            phase: Phase,
-            timerRunning: Boolean
-        ) : this(
-            timerName = timer.name,
-            phase = phase.stringRes,
-            timeRemaining = timeRemaining.toIntervalDuration().toString(),
-            currentSet = currentSet,
-            currentRound = currentRound,
-            timerBackground = phase.colorRes,
-            soundId = if (timerRunning && timeRemaining == timer.durationForPhase(phase))
-                phase.ordinal
-            else null,
-            playPauseIcon = if (timerRunning) R.drawable.ic_pause else R.drawable.ic_play_arrow
-        )
-    }
-
-    object ExitState : IntervalTimerActiveState()
 }

@@ -16,8 +16,9 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
 import com.wbrawner.trainterval.Logger
 import com.wbrawner.trainterval.R
-import com.wbrawner.trainterval.model.IntervalTimerDao
-import com.wbrawner.trainterval.model.Phase
+import com.wbrawner.trainterval.shared.IntervalTimerDao
+import com.wbrawner.trainterval.shared.IntervalTimerState
+import com.wbrawner.trainterval.shared.Phase
 import kotlinx.android.synthetic.main.fragment_active_timer.*
 import kotlinx.coroutines.*
 import org.koin.android.ext.android.inject
@@ -78,9 +79,9 @@ class ActiveTimerFragment : Fragment() {
         coroutineScope!!.launch {
             activeTimerViewModel.timerState.observe(viewLifecycleOwner, Observer { state ->
                 when (state) {
-                    is IntervalTimerActiveState.LoadingState -> renderLoading()
-                    is IntervalTimerActiveState.TimerRunningState -> renderTimer(state)
-                    is IntervalTimerActiveState.ExitState -> findNavController().navigateUp()
+                    is IntervalTimerState.LoadingState -> renderLoading()
+                    is IntervalTimerState.TimerRunningState -> renderTimer(state)
+                    is IntervalTimerState.ExitState -> findNavController().navigateUp()
                 }
             })
             activeTimerViewModel.init(logger, timerDao, timerId)
@@ -103,7 +104,7 @@ class ActiveTimerFragment : Fragment() {
         }
     }
 
-    private fun renderTimer(state: IntervalTimerActiveState.TimerRunningState) {
+    private fun renderTimer(state: IntervalTimerState.TimerRunningState) {
         progressBar.visibility = View.GONE
         timerLayout.referencedIds.forEach {
             view?.findViewById<View>(it)?.visibility = View.VISIBLE

@@ -1,9 +1,8 @@
-package com.wbrawner.trainterval.model
+package com.wbrawner.trainterval.shared
 
 import androidx.annotation.ColorRes
 import androidx.annotation.StringRes
 import androidx.room.*
-import com.wbrawner.trainterval.R
 import kotlinx.coroutines.flow.Flow
 import java.util.concurrent.TimeUnit
 

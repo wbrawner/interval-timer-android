@@ -1,4 +1,4 @@
-package com.wbrawner.trainterval
+package com.wbrawner.trainterval.shared
 
 import java.util.concurrent.TimeUnit
 
@@ -42,5 +42,9 @@ fun Long.toIntervalDuration(): IntervalDuration {
         seconds -= minutes * SECONDS_IN_MINUTE
     }
 
-    return IntervalDuration(hours, minutes, seconds)
+    return IntervalDuration(
+        hours,
+        minutes,
+        seconds
+    )
 }

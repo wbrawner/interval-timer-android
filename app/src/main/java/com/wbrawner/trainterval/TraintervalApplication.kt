@@ -2,6 +2,7 @@ package com.wbrawner.trainterval
 
 import android.app.Application
 import androidx.room.Room
+import com.wbrawner.trainterval.shared.TraintervalDatabase
 import com.wbrawner.trainterval.timerform.TimerFormViewModel
 import com.wbrawner.trainterval.timerlist.TimerListViewModel
 import org.koin.android.ext.koin.androidContext

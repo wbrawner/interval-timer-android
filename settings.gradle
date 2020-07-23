@@ -1,2 +1,3 @@
+include ':shared'
 rootProject.name='Interval Timer'
 include ':app', ':wear'

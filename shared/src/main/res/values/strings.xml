@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Trainterval</string>
+    <string name="phase_warm_up">Warm Up</string>
+    <string name="phase_low_intensity">Low Intensity</string>
+    <string name="phase_high_intensity">High Intensity</string>
+    <string name="phase_rest">Rest</string>
+    <string name="phase_cool_down">Cool Down</string>
+</resources>

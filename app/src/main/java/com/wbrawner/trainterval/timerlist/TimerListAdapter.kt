@@ -8,8 +8,8 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.wbrawner.trainterval.R
-import com.wbrawner.trainterval.model.IntervalTimer
-import com.wbrawner.trainterval.toIntervalDuration
+import com.wbrawner.trainterval.shared.IntervalTimer
+import com.wbrawner.trainterval.shared.toIntervalDuration
 
 class TimerListAdapter(
     private val timerListViewModel: TimerListViewModel
