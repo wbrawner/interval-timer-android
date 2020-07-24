@@ -2,18 +2,45 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 
+def keystoreProperties = new Properties()
+try {
+    def keystorePropertiesFile = rootProject.file("keystore.properties")
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+} catch (FileNotFoundException ignored) {
+    logger.warn("Unable to load keystore properties. Using debug signing configuration instead")
+    keystoreProperties['keyAlias'] = "androiddebugkey"
+    keystoreProperties['keyPassword'] = "android"
+    keystoreProperties['storeFile'] = new File(System.getProperty("user.home"), ".android/debug.keystore").absolutePath
+    keystoreProperties['storePassword'] = "android"
+}
+
 android {
     compileSdkVersion 30
     buildToolsVersion "30.0.1"
 
     defaultConfig {
-        applicationId "com.wbrawner.trainterval.wear"
+        applicationId "com.wbrawner.trainterval"
         minSdkVersion 28
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        signingConfig signingConfigs.debug
+    }
+    signingConfigs {
+        debug {
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+        }
+        release {
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+        }
     }
 
     buildTypes {
@@ -29,7 +56,6 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'androidx.wear:wear:1.0.0'
     implementation 'com.google.android.support:wearable:2.7.0'
-    implementation 'com.google.android.gms:play-services-wearable:17.0.0'
     compileOnly 'com.google.android.wearable:wearable:2.7.0'
     testImplementation 'junit:junit:4.12'
 }

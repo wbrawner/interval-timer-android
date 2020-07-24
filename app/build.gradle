@@ -3,6 +3,18 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 
+def keystoreProperties = new Properties()
+try {
+    def keystorePropertiesFile = rootProject.file("keystore.properties")
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+} catch (FileNotFoundException ignored) {
+    logger.warn("Unable to load keystore properties. Using debug signing configuration instead")
+    keystoreProperties['keyAlias'] = "androiddebugkey"
+    keystoreProperties['keyPassword'] = "android"
+    keystoreProperties['storeFile'] = new File(System.getProperty("user.home"), ".android/debug.keystore").absolutePath
+    keystoreProperties['storePassword'] = "android"
+}
+
 android {
     compileSdkVersion 29
     buildToolsVersion "29.0.3"
@@ -23,6 +35,21 @@ android {
                         "room.incremental"     : "true",
                         "room.expandProjection": "true"]
             }
+        }
+        signingConfig signingConfigs.debug
+    }
+    signingConfigs {
+        debug {
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+        }
+        release {
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
         }
     }
 
@@ -45,7 +72,7 @@ android {
 
 dependencies {
     implementation project(':shared')
-
+    wearApp project(':wear')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
     implementation 'androidx.appcompat:appcompat:1.1.0'

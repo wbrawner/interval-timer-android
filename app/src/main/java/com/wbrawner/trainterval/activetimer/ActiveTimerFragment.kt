@@ -1,8 +1,10 @@
 package com.wbrawner.trainterval.activetimer
 
+import android.content.Context
 import android.media.AudioManager
 import android.media.SoundPool
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -14,18 +16,21 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
+import com.google.android.gms.wearable.*
 import com.wbrawner.trainterval.Logger
 import com.wbrawner.trainterval.R
 import com.wbrawner.trainterval.shared.IntervalTimerDao
 import com.wbrawner.trainterval.shared.IntervalTimerState
+import com.wbrawner.trainterval.shared.IntervalTimerState.Companion.TIMER_ACTIONS_TOGGLE
+import com.wbrawner.trainterval.shared.IntervalTimerState.Companion.TIMER_STATE
 import com.wbrawner.trainterval.shared.Phase
+import com.wbrawner.trainterval.shared.toDataMap
 import kotlinx.android.synthetic.main.fragment_active_timer.*
 import kotlinx.coroutines.*
 import org.koin.android.ext.android.inject
 import org.koin.core.parameter.parametersOf
 
-
-class ActiveTimerFragment : Fragment() {
+class ActiveTimerFragment : Fragment(), MessageClient.OnMessageReceivedListener {
 
     private var coroutineScope: CoroutineScope? = null
     private val activeTimerViewModel: ActiveTimerViewModel by activityViewModels()
@@ -34,6 +39,8 @@ class ActiveTimerFragment : Fragment() {
     private var timerId: Long = 0
     private lateinit var soundPool: SoundPool
     private val soundIds = mutableListOf<Int>()
+    private lateinit var dataClient: DataClient
+    private lateinit var messageClient: MessageClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,6 +71,13 @@ class ActiveTimerFragment : Fragment() {
             super.onOptionsItemSelected(item)
         }
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        dataClient = Wearable.getDataClient(context)
+        messageClient = Wearable.getMessageClient(context)
+        messageClient.addListener(this)
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -83,6 +97,12 @@ class ActiveTimerFragment : Fragment() {
                     is IntervalTimerState.TimerRunningState -> renderTimer(state)
                     is IntervalTimerState.ExitState -> findNavController().navigateUp()
                 }
+                val req = PutDataMapRequest.create(TIMER_STATE).run {
+                    setUrgent()
+                    dataMap.putAll(state.toDataMap())
+                    asPutDataRequest()
+                }
+                dataClient.putDataItem(req).addOnSuccessListener { /* No op*/ }
             })
             activeTimerViewModel.init(logger, timerDao, timerId)
         }
@@ -110,10 +130,15 @@ class ActiveTimerFragment : Fragment() {
             view?.findViewById<View>(it)?.visibility = View.VISIBLE
         }
         (activity as? AppCompatActivity)?.supportActionBar?.title = state.timerName
-        val backgroundColor = resources.getColor(state.timerBackground, context?.theme)
+        val backgroundColor = resources.getColor(state.phase.colorRes, context?.theme)
         timerBackground.setBackgroundColor(backgroundColor)
-        playPauseButton.setImageDrawable(requireContext().getDrawable(state.playPauseIcon))
-        timerPhase.text = getString(state.phase)
+        playPauseButton.setImageDrawable(
+            requireContext().getDrawable(
+                if (state.isRunning) R.drawable.ic_pause
+                else R.drawable.ic_play_arrow
+            )
+        )
+        timerPhase.text = getString(state.phase.stringRes)
         timeRemaining.text = state.timeRemaining
         timerSets.text = state.currentSet.toString()
         timerRounds.text = state.currentRound.toString()
@@ -130,10 +155,21 @@ class ActiveTimerFragment : Fragment() {
         soundPool.play(soundId, volume, volume, 1, 0, 1f)
     }
 
+    override fun onMessageReceived(event: MessageEvent) {
+        Log.d("WearMessage", "Received event: ${event.path}")
+        if (event.path?.compareTo(TIMER_ACTIONS_TOGGLE) != 0) return
+        activeTimerViewModel.toggleTimer()
+    }
+
     override fun onDestroyView() {
         coroutineScope?.cancel()
         coroutineScope = null
         super.onDestroyView()
+    }
+
+    override fun onDestroy() {
+        messageClient.removeListener(this)
+        super.onDestroy()
     }
 
     companion object {

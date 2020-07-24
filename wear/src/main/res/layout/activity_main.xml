@@ -1,12 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.wearable.view.WearableFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/timerRoot"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/colorSurface">
 
     <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center" />
+        android:id="@+id/timeRemaining"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_gravity="center"
+        android:autoSizeTextType="uniform"
+        android:fontFamily="monospace"
+        android:gravity="center"
+        android:padding="16dp"
+        android:textAlignment="center"
+        android:textColor="@color/colorOnSurface"
+        tools:text="00:00:00" />
 
-</android.support.wearable.view.WearableFrameLayout>
+    <ImageButton
+        android:id="@+id/toggleButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:backgroundTint="#40000000"
+        android:contentDescription="@string/toggle_timer"
+        android:fitsSystemWindows="true"
+        android:foregroundGravity="center"
+        android:onClick="toggleTimer"
+        android:src="@drawable/ic_play_arrow" />
+
+</FrameLayout>
