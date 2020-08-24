@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#FFEB3B</color>
+    <color name="colorPrimaryDark">#F9A825</color>
+    <color name="colorAccent">#F57C00</color>
+    <color name="colorOnSurface">#F1F1F1</color>
+    <color name="colorSurface">#111111</color>
+    <color name="colorSurfaceStroke">#F1F1F1</color>
+    <color name="colorSurfaceWarmUp">@color/colorSurface</color>
+    <color name="colorSurfaceLowIntensity">#F06292</color>
+    <color name="colorSurfaceHighIntensity">#81C784</color>
+    <color name="colorSurfaceRest">#FFF176</color>
+    <color name="colorSurfaceCoolDown">#64B5F6</color>
+</resources>
