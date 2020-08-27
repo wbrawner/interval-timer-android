@@ -1,6 +1,9 @@
 package com.wbrawner.trainterval.wear
 
+import android.content.Context
 import android.os.Bundle
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.support.wearable.activity.WearableActivity
 import android.util.Log
 import android.view.View
@@ -17,6 +20,7 @@ class MainActivity : WearableActivity(), DataClient.OnDataChangedListener {
     private lateinit var dataClient: DataClient
     private lateinit var messageClient: MessageClient
     private lateinit var nodeClient: NodeClient
+    private lateinit var vibrator: Vibrator
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,6 +28,8 @@ class MainActivity : WearableActivity(), DataClient.OnDataChangedListener {
         dataClient = Wearable.getDataClient(this)
         messageClient = Wearable.getMessageClient(this)
         nodeClient = Wearable.getNodeClient(this)
+        vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        setAmbientEnabled()
     }
 
     override fun onResume() {
@@ -56,6 +62,14 @@ class MainActivity : WearableActivity(), DataClient.OnDataChangedListener {
                             else R.drawable.ic_play_inset
                         )
                     )
+                    if (intervalTimerState.vibrate) {
+                        vibrator.vibrate(
+                            VibrationEffect.createWaveform(
+                                longArrayOf(0L, 100L, 50L, 100L),
+                                -1
+                            )
+                        )
+                    }
                 }
                 is IntervalTimerState.ExitState -> timeRemaining.text = "Exit"
             }
@@ -75,5 +89,14 @@ class MainActivity : WearableActivity(), DataClient.OnDataChangedListener {
                         }
                 }
         }
+    }
+
+    override fun onEnterAmbient(ambientDetails: Bundle?) {
+        super.onEnterAmbient(ambientDetails)
+    }
+
+    override fun onExitAmbient() {
+        super.onExitAmbient()
+
     }
 }
