@@ -102,12 +102,12 @@
         android:id="@+id/timerPhase"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        tools:text="Warm-Up"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/timeRemaining"
         android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
-        android:textColor="@color/colorOnSurface" />
+        android:textColor="@color/colorOnSurface"
+        app:layout_constraintBottom_toTopOf="@+id/timeRemaining"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:text="Warm-Up" />
 
     <TextView
         android:id="@+id/timeRemaining"

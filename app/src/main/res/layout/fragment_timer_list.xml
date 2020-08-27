@@ -14,9 +14,9 @@
         android:id="@+id/timerList"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginTop="-90dp"
         android:clipChildren="false"
         android:clipToPadding="false"
-        android:layout_marginTop="-90dp"
         android:paddingTop="90dp"
         android:visibility="gone"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
@@ -48,6 +48,7 @@
         android:layout_margin="16dp"
         android:src="@drawable/ic_add"
         android:visibility="gone"
+        app:backgroundTint="@color/colorAccent"
         tools:visibility="visible" />
 
     <com.google.android.material.appbar.AppBarLayout
