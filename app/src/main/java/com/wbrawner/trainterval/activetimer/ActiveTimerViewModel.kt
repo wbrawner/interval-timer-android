@@ -39,7 +39,7 @@ class ActiveTimerViewModel : ViewModel() {
             currentRound = timer.cycles
             timeRemaining = timer.warmUpDuration
             currentPhase = Phase.WARM_UP
-            updateTimer()
+            updateTimer(null)
         }
     }
 
@@ -47,34 +47,27 @@ class ActiveTimerViewModel : ViewModel() {
         if (timerJob != null) {
             timerJob?.cancel()
             timerJob = null
-            timerState.postValue(
-                TimerRunningState(
-                    timer,
-                    timeRemaining,
-                    currentSet,
-                    currentRound,
-                    currentPhase,
-                    timerJob != null
-                )
-            )
+            updateTimer(null)
         } else {
             viewModelScope.launch {
-                startTimer()
+                startTimer(null)
             }
         }
     }
 
-    private fun startTimer() {
+    private fun startTimer(previousPhase: Phase?) {
         viewModelScope.launch {
             timerJob = launch {
-                updateTimer()
+                updateTimer(previousPhase)
                 while (coroutineContext.isActive && timerJob != null) {
                     delay(1_000)
                     timeRemaining -= 1_000
+                    // We need to recalculate the previous phase on each iteration
+                    val previousPhaseOngoing = currentPhase
                     if (timeRemaining <= 0) {
                         goForward()
                     }
-                    updateTimer()
+                    updateTimer(if (previousPhaseOngoing != currentPhase) previousPhaseOngoing else null)
                 }
             }
         }
@@ -82,22 +75,24 @@ class ActiveTimerViewModel : ViewModel() {
 
     fun skipAhead() {
         timerJob?.cancel()
+        var previousPhase: Phase? = null
         when (currentPhase) {
             Phase.COOL_DOWN -> {
                 timeRemaining = 0
             }
             else -> {
+                previousPhase = currentPhase
                 goForward()
             }
         }
         if (timerJob != null) {
-            startTimer()
+            startTimer(previousPhase)
         } else {
-            updateTimer()
+            updateTimer(previousPhase)
         }
     }
 
-    private fun updateTimer() {
+    private fun updateTimer(previousPhase: Phase?) {
         timerState.postValue(
             TimerRunningState(
                 timer,
@@ -105,6 +100,7 @@ class ActiveTimerViewModel : ViewModel() {
                 currentSet,
                 currentRound,
                 currentPhase,
+                previousPhase,
                 timerJob != null
             )
         )
@@ -154,6 +150,7 @@ class ActiveTimerViewModel : ViewModel() {
 
     fun goBack() {
         timerJob?.cancel()
+        var previousPhase: Phase = currentPhase
         when (currentPhase) {
             Phase.WARM_UP -> {
                 timeRemaining = timer.warmUpDuration
@@ -191,9 +188,9 @@ class ActiveTimerViewModel : ViewModel() {
             }
         }
         if (timerJob != null) {
-            startTimer()
+            startTimer(previousPhase)
         } else {
-            updateTimer()
+            updateTimer(previousPhase)
         }
     }
 }

@@ -1,5 +1,7 @@
 package com.wbrawner.trainterval.activetimer
 
+import android.animation.ArgbEvaluator
+import android.animation.ValueAnimator
 import android.content.Context
 import android.media.AudioManager
 import android.media.SoundPool
@@ -16,6 +18,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
+import com.robinhood.ticker.TickerUtils
 import com.google.android.gms.wearable.*
 import com.wbrawner.trainterval.Logger
 import com.wbrawner.trainterval.R
@@ -89,6 +92,9 @@ class ActiveTimerFragment : Fragment(), MessageClient.OnMessageReceivedListener 
             it.setSupportActionBar(toolbar)
             it.supportActionBar?.setDisplayHomeAsUpEnabled(true)
         }
+        timeRemaining.setCharacterLists(TickerUtils.provideNumberList() + ":")
+        timerSets.setCharacterLists(TickerUtils.provideNumberList())
+        timerRounds.setCharacterLists(TickerUtils.provideNumberList())
         coroutineScope = CoroutineScope(Dispatchers.Main)
         coroutineScope!!.launch {
             activeTimerViewModel.timerState.observe(viewLifecycleOwner, Observer { state ->
@@ -131,7 +137,19 @@ class ActiveTimerFragment : Fragment(), MessageClient.OnMessageReceivedListener 
         }
         (activity as? AppCompatActivity)?.supportActionBar?.title = state.timerName
         val backgroundColor = resources.getColor(state.phase.colorRes, context?.theme)
-        timerBackground.setBackgroundColor(backgroundColor)
+        Log.d("ActiveTimerFragment", "State: $state")
+        state.previousPhase?.let {
+            val previousBackgroundColor = resources.getColor(it.colorRes, context?.theme)
+            val colorAnimation =
+                ValueAnimator.ofObject(ArgbEvaluator(), previousBackgroundColor, backgroundColor)
+            colorAnimation.duration = 250
+            colorAnimation.addUpdateListener { animator ->
+                timerBackground.setBackgroundColor(
+                    animator.animatedValue as Int
+                )
+            }
+            colorAnimation.start()
+        } ?: timerBackground.setBackgroundColor(backgroundColor)
         playPauseButton.setImageDrawable(
             requireContext().getDrawable(
                 if (state.isRunning) R.drawable.ic_pause

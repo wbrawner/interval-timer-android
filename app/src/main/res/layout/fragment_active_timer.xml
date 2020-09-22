@@ -55,7 +55,7 @@
             android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
             android:textColor="@color/colorOnSurface" />
 
-        <TextView
+        <com.robinhood.ticker.TickerView
             android:id="@+id/timerSets"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -82,7 +82,7 @@
             android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
             android:textColor="@color/colorOnSurface" />
 
-        <TextView
+        <com.robinhood.ticker.TickerView
             android:id="@+id/timerRounds"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -109,7 +109,7 @@
         app:layout_constraintStart_toStartOf="parent"
         tools:text="Warm-Up" />
 
-    <TextView
+    <com.robinhood.ticker.TickerView
         android:id="@+id/timeRemaining"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

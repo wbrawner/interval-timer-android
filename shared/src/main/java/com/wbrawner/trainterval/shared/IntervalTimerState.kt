@@ -15,6 +15,7 @@ sealed class IntervalTimerState : Serializable {
         val currentRound: Int,
         val soundId: Int?,
         val phase: Phase,
+        val previousPhase: Phase?,
         val isRunning: Boolean,
         val vibrate: Boolean
     ) : IntervalTimerState() {
@@ -24,10 +25,12 @@ sealed class IntervalTimerState : Serializable {
             currentSet: Int,
             currentRound: Int,
             phase: Phase,
+            previousPhase: Phase?,
             timerRunning: Boolean
         ) : this(
             timerName = timer.name,
             phase = phase,
+            previousPhase = previousPhase,
             timeRemaining = timeRemaining.toIntervalDuration().toString(),
             currentSet = currentSet,
             currentRound = currentRound,
@@ -57,6 +60,7 @@ const val KEY_CURRENT_SET = "com.wbrawner.trainterval.currentSet"
 const val KEY_CURRENT_ROUND = "com.wbrawner.trainterval.currentRound"
 const val KEY_SOUND_ID = "com.wbrawner.trainterval.soundId"
 const val KEY_PHASE = "com.wbrawner.trainterval.phase"
+const val KEY_PREVIOUS_PHASE = "com.wbrawner.trainterval.previousPhase"
 const val KEY_RUNNING = "com.wbrawner.trainterval.timerRunning"
 const val KEY_VIBRATE = "com.wbrawner.trainterval.vibrate"
 
@@ -83,6 +87,7 @@ fun DataMap.toIntervalTimerState(): IntervalTimerState? = when (getString(KEY_ST
         getInt(KEY_CURRENT_ROUND),
         getInt(KEY_SOUND_ID),
         Phase.valueOf(getString(KEY_PHASE)),
+        getString(KEY_PREVIOUS_PHASE)?.let { Phase.valueOf(it) },
         getBoolean(KEY_RUNNING),
         getBoolean(KEY_VIBRATE)
     )
@@ -100,6 +105,7 @@ fun IntervalTimerState.TimerRunningState.toDataMap(): DataMap {
             putInt(KEY_SOUND_ID, it)
         }
         putString(KEY_PHASE, state.phase.name)
+        putString(KEY_PREVIOUS_PHASE, state.previousPhase?.name)
         putBoolean(KEY_RUNNING, state.isRunning)
         putBoolean(KEY_VIBRATE, state.vibrate)
     }
