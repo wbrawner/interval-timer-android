@@ -18,8 +18,8 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
-import com.robinhood.ticker.TickerUtils
 import com.google.android.gms.wearable.*
+import com.robinhood.ticker.TickerUtils
 import com.wbrawner.trainterval.Logger
 import com.wbrawner.trainterval.R
 import com.wbrawner.trainterval.shared.IntervalTimerDao
@@ -92,7 +92,7 @@ class ActiveTimerFragment : Fragment(), MessageClient.OnMessageReceivedListener 
             it.setSupportActionBar(toolbar)
             it.supportActionBar?.setDisplayHomeAsUpEnabled(true)
         }
-        timeRemaining.setCharacterLists(TickerUtils.provideNumberList() + ":")
+        timeRemaining.setCharacterLists(TickerUtils.provideNumberList())
         timerSets.setCharacterLists(TickerUtils.provideNumberList())
         timerRounds.setCharacterLists(TickerUtils.provideNumberList())
         coroutineScope = CoroutineScope(Dispatchers.Main)
@@ -137,7 +137,6 @@ class ActiveTimerFragment : Fragment(), MessageClient.OnMessageReceivedListener 
         }
         (activity as? AppCompatActivity)?.supportActionBar?.title = state.timerName
         val backgroundColor = resources.getColor(state.phase.colorRes, context?.theme)
-        Log.d("ActiveTimerFragment", "State: $state")
         state.previousPhase?.let {
             val previousBackgroundColor = resources.getColor(it.colorRes, context?.theme)
             val colorAnimation =

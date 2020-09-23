@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/timerRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorSurface">
+    android:background="@color/colorSurface"
+    android:gravity="center"
+    android:orientation="vertical">
 
     <TextView
         android:id="@+id/timeRemaining"
         android:layout_width="match_parent"
         android:layout_height="100dp"
-        android:layout_gravity="center"
         android:autoSizeTextType="uniform"
         android:fontFamily="monospace"
-        android:gravity="center"
         android:padding="16dp"
         android:textAlignment="center"
         android:textColor="@color/colorOnSurface"
@@ -21,14 +21,13 @@
 
     <ImageButton
         android:id="@+id/toggleButton"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:backgroundTint="#40000000"
+        android:background="@drawable/background_round"
         android:contentDescription="@string/toggle_timer"
         android:fitsSystemWindows="true"
-        android:foregroundGravity="center"
         android:onClick="toggleTimer"
+        android:padding="8dp"
         android:src="@drawable/ic_play_arrow" />
 
-</FrameLayout>
+</LinearLayout>
