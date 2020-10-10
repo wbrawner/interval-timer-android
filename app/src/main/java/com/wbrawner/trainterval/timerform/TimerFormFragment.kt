@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.transition.MaterialContainerTransform
 import com.wbrawner.trainterval.R
 import com.wbrawner.trainterval.shared.IntervalTimer
 import com.wbrawner.trainterval.timerform.IntervalTimerEditState.*
@@ -46,6 +47,17 @@ class TimerFormFragment : Fragment() {
         (activity as? AppCompatActivity)?.let {
             it.setSupportActionBar(toolbar)
             it.supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        }
+        val context = view.context
+        sharedElementEnterTransition = MaterialContainerTransform().apply {
+            duration = resources.getInteger(android.R.integer.config_longAnimTime).toLong()
+            fadeMode = MaterialContainerTransform.FADE_MODE_CROSS
+            scrimColor = resources.getColor(R.color.colorSurface, context.theme)
+        }
+        sharedElementReturnTransition = MaterialContainerTransform().apply {
+            duration = resources.getInteger(android.R.integer.config_longAnimTime).toLong()
+            fadeMode = MaterialContainerTransform.FADE_MODE_CROSS
+            scrimColor = resources.getColor(R.color.colorSurface, context.theme)
         }
         coroutineScope = CoroutineScope(Dispatchers.Main)
         coroutineScope!!.launch {

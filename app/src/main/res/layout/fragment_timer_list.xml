@@ -47,6 +47,7 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
         android:src="@drawable/ic_add"
+        android:transitionName="fabContainer"
         android:visibility="gone"
         app:backgroundTint="@color/colorAccent"
         tools:visibility="visible" />

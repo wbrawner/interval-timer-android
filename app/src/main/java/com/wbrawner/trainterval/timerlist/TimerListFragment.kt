@@ -6,11 +6,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.FragmentNavigatorExtras
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.transition.MaterialElevationScale
 import com.wbrawner.trainterval.R
 import com.wbrawner.trainterval.shared.IntervalTimer
 import com.wbrawner.trainterval.timerlist.IntervalTimerListState.*
@@ -33,6 +36,11 @@ class TimerListFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        postponeEnterTransition()
+        view.doOnPreDraw { startPostponedEnterTransition() }
+        exitTransition = MaterialElevationScale(false)
+        reenterTransition = MaterialElevationScale(true)
+        allowReturnTransitionOverlap = false
         (activity as? AppCompatActivity)?.let {
             it.setSupportActionBar(toolbar)
             it.supportActionBar?.setDisplayHomeAsUpEnabled(false)
@@ -55,7 +63,12 @@ class TimerListFragment : Fragment() {
                 is EmptyListState -> renderEmptyList()
                 is SuccessListState -> renderSuccessState(state.timers)
                 is ErrorState -> renderErrorState(state.message)
-                is CreateTimer -> findNavController().navigate(R.id.timerFormFragment)
+                is CreateTimer -> findNavController().navigate(
+                    R.id.timerFormFragment,
+                    null,
+                    null,
+                    FragmentNavigatorExtras(addTimerButton to "fabContainer")
+                )
                 is EditTimer -> findNavController().navigate(R.id.timerFormFragment)
                 is OpenTimer -> findNavController().navigate(
                     R.id.activeTimerFragment,
