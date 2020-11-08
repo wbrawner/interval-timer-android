@@ -16,7 +16,6 @@ try {
 
 android {
     compileSdkVersion 30
-    buildToolsVersion "30.0.1"
 
     defaultConfig {
         applicationId "com.wbrawner.trainterval"
@@ -65,9 +64,9 @@ android {
 dependencies {
     implementation project(':shared')
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    implementation 'androidx.wear:wear:1.0.0'
-    implementation 'com.google.android.support:wearable:2.7.0'
+    implementation 'androidx.wear:wear:1.1.0'
+    implementation 'com.google.android.support:wearable:2.8.1'
     implementation 'androidx.appcompat:appcompat:1.2.0'
-    compileOnly 'com.google.android.wearable:wearable:2.7.0'
-    testImplementation 'junit:junit:4.12'
+    compileOnly 'com.google.android.wearable:wearable:2.8.1'
+    testImplementation 'junit:junit:4.13.1'
 }
