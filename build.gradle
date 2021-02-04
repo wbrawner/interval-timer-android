@@ -3,11 +3,10 @@
 buildscript {
     ext {
         arch_version = "2.1.0"
-        compose_version = '1.0.0-alpha06'
-        koin_version = "2.1.5"
-        kotlin_version = '1.4.10'
+        compose_version = '1.0.0-alpha10'
+        koin_version = "2.2.2"
+        kotlin_version = '1.4.21'
         lifecycle_version = "2.2.0"
-        nav_version = "2.3.1"
         room_version = '2.2.5'
         wearable_play_services = '17.0.0'
     }
@@ -18,7 +17,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.2.0-alpha16'
+        classpath 'com.android.tools.build:gradle:7.0.0-alpha04'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
         // NOTE: Do not place your application dependencies here; they belong

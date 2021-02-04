@@ -15,30 +15,34 @@ class TimerListAdapter(
     private val timerListViewModel: TimerListViewModel
 ) : ListAdapter<IntervalTimer, TimerListAdapter.ViewHolder>(IntervalTimerDiffUtilCallback()) {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = ViewHolder(
-        LayoutInflater.from(parent.context)
-            .inflate(R.layout.list_item_timer, parent, false)
-    )
+//    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = ViewHolder(
+//        LayoutInflater.from(parent.context)
+//            .inflate(R.layout.list_item_timer, parent, false)
+//    )
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val timer = getItem(position)
-        holder.title.text = timer.name
-        if (timer.description.isBlank()) {
-            holder.description.visibility = View.GONE
-        } else {
-            holder.description.visibility = View.VISIBLE
-            holder.description.text = timer.description
-        }
-        holder.duration.text = timer.totalDuration.toIntervalDuration().toString()
+//        holder.title.text = timer.name
+//        if (timer.description.isBlank()) {
+//            holder.description.visibility = View.GONE
+//        } else {
+//            holder.description.visibility = View.VISIBLE
+//            holder.description.text = timer.description
+//        }
+//        holder.duration.text = timer.totalDuration.toIntervalDuration().toString()
         holder.itemView.setOnClickListener {
             timerListViewModel.openTimer(timer)
         }
     }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val title: TextView = itemView.findViewById(R.id.title)
-        val description: TextView = itemView.findViewById(R.id.description)
-        val duration: TextView = itemView.findViewById(R.id.duration)
+//        val title: TextView = itemView.findViewById(R.id.title)
+//        val description: TextView = itemView.findViewById(R.id.description)
+//        val duration: TextView = itemView.findViewById(R.id.duration)
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        TODO("Not yet implemented")
     }
 }
 

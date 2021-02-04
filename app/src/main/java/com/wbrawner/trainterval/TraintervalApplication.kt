@@ -12,7 +12,6 @@ import org.koin.core.parameter.parametersOf
 import org.koin.dsl.module
 
 class TraintervalApplication : Application() {
-
     override fun onCreate() {
         super.onCreate()
 

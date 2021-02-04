@@ -16,11 +16,8 @@ class TimerListViewModel(
 ) : ViewModel() {
     val timerState: MutableLiveData<IntervalTimerListState> = MutableLiveData(LoadingState)
     private val timers = ArrayList<IntervalTimer>()
-    private var initialized = false
 
-    fun init() {
-        if (initialized) return
-        initialized = true
+    init {
         GlobalScope.launch {
             timerDao.getAll()
                 .collect {
@@ -78,6 +75,6 @@ sealed class IntervalTimerListState {
     data class SuccessListState(val timers: List<IntervalTimer>) : IntervalTimerListState()
     data class ErrorState(val message: String) : IntervalTimerListState()
     object CreateTimer : IntervalTimerListState()
-    data class EditTimer(val timer: IntervalTimer) : IntervalTimerListState()
+    data class EditTimer(val timerId: Long) : IntervalTimerListState()
     data class OpenTimer(val timerId: Long) : IntervalTimerListState()
 }

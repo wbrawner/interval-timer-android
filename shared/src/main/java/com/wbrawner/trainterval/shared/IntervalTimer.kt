@@ -2,7 +2,10 @@ package com.wbrawner.trainterval.shared
 
 import androidx.annotation.ColorRes
 import androidx.annotation.StringRes
+import androidx.compose.material.MaterialTheme
+import androidx.compose.ui.graphics.Color
 import androidx.room.*
+import com.wbrawner.trainterval.shared.theme.TraintervalColors
 import kotlinx.coroutines.flow.Flow
 import java.util.concurrent.TimeUnit
 
@@ -34,15 +37,15 @@ data class IntervalTimer(
 }
 
 enum class Phase(
-    @ColorRes val colorRes: Int,
+    @ColorRes val color: Color,
     @StringRes val stringRes: Int,
     val soundFile: String
 ) {
-    WARM_UP(R.color.colorSurface, R.string.phase_warm_up, "warm.mp3"),
-    LOW_INTENSITY(R.color.colorSurfaceLowIntensity, R.string.phase_low_intensity, "low.mp3"),
-    HIGH_INTENSITY(R.color.colorSurfaceHighIntensity, R.string.phase_high_intensity, "high.mp3"),
-    REST(R.color.colorSurfaceRest, R.string.phase_rest, "rest.mp3"),
-    COOL_DOWN(R.color.colorSurfaceCoolDown, R.string.phase_cool_down, "cool.mp3"),
+    WARM_UP(TraintervalColors.warmUp, R.string.phase_warm_up, "warm.mp3"),
+    LOW_INTENSITY(TraintervalColors.lowIntensity, R.string.phase_low_intensity, "low.mp3"),
+    HIGH_INTENSITY(TraintervalColors.highIntensity, R.string.phase_high_intensity, "high.mp3"),
+    REST(TraintervalColors.rest, R.string.phase_rest, "rest.mp3"),
+    COOL_DOWN(TraintervalColors.cooldown, R.string.phase_cool_down, "cool.mp3"),
 }
 
 @Dao
