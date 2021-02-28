@@ -13,7 +13,6 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.imageFromResource
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.painterResource
@@ -45,37 +44,35 @@ fun TimerList(timerListViewModel: TimerListViewModel, navController: NavControll
                 backgroundColor = MaterialTheme.colors.background
             )
         },
-        bodyContent = { padding ->
-            when (val state = observedState.value) {
-                is IntervalTimerListState.EmptyListState -> BasicText(
-                    "Add a new timer to get started.",
-                    modifier = Modifier.padding(padding),
-                    style = TextStyle(color = MaterialTheme.colors.onSurface)
-                )
-                is IntervalTimerListState.SuccessListState -> LazyColumn(Modifier.padding(padding)) {
-                    items(state.timers) { timer ->
-                        TimerListItem(timer)
-
-                    }
-                }
-                is IntervalTimerListState.ErrorState -> BasicText(
-                    state.message,
-                    modifier = Modifier.padding(padding),
-                    style = TextStyle(color = MaterialTheme.colors.onSurface)
-                )
-                is IntervalTimerListState.CreateTimer -> navController.navigate("new")
-                is IntervalTimerListState.EditTimer -> navController.navigate("edit/${state.timerId}")
-                is IntervalTimerListState.OpenTimer -> navController.navigate("timer/${state.timerId}")
-                else -> CircularProgressIndicator()
-            }
-        },
         floatingActionButton = {
             FloatingActionButton(onClick = { navController.navigate("new") }) {
-                Image(imageVector = Icons.Default.Add)
+                Image(imageVector = Icons.Default.Add, "Add")
             }
         },
         floatingActionButtonPosition = FabPosition.End
-    )
+    ) { padding ->
+        when (val state = observedState.value) {
+            is IntervalTimerListState.EmptyListState -> BasicText(
+                "Add a new timer to get started.",
+                modifier = Modifier.padding(padding),
+                style = TextStyle(color = MaterialTheme.colors.onSurface)
+            )
+            is IntervalTimerListState.SuccessListState -> LazyColumn(Modifier.padding(padding)) {
+                items(state.timers.size) { i ->
+                    TimerListItem(state.timers[i])
+                }
+            }
+            is IntervalTimerListState.ErrorState -> BasicText(
+                state.message,
+                modifier = Modifier.padding(padding),
+                style = TextStyle(color = MaterialTheme.colors.onSurface)
+            )
+            is IntervalTimerListState.CreateTimer -> navController.navigate("new")
+            is IntervalTimerListState.EditTimer -> navController.navigate("edit/${state.timerId}")
+            is IntervalTimerListState.OpenTimer -> navController.navigate("timer/${state.timerId}")
+            else -> CircularProgressIndicator()
+        }
+    }
 }
 
 

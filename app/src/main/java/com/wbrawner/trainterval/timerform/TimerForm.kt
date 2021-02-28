@@ -43,20 +43,19 @@ fun TimerFormScreen(
                 backgroundColor = MaterialTheme.colors.background
             )
         },
-        bodyContent = { padding ->
-            when (val state = observedState.value) {
-                is IntervalTimerEditState.EditTimerState -> TimerForm(state.timer)
-                is IntervalTimerEditState.ErrorState -> navController.navigate("new")
-                else -> CircularProgressIndicator()
-            }
-        },
         floatingActionButton = {
             FloatingActionButton(onClick = { navController.navigate("new") }) {
-                Image(imageVector = Icons.Default.Add)
+                Image(imageVector = Icons.Default.Add, "Add")
             }
         },
         floatingActionButtonPosition = FabPosition.End
-    )
+    ) {
+        when (val state = observedState.value) {
+            is IntervalTimerEditState.EditTimerState -> TimerForm(state.timer)
+            is IntervalTimerEditState.ErrorState -> navController.navigate("new")
+            else -> CircularProgressIndicator()
+        }
+    }
 }
 
 @Composable
