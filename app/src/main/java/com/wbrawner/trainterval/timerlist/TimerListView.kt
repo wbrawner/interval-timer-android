@@ -1,38 +1,40 @@
 package com.wbrawner.trainterval.timerlist
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.imageResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.navigate
-import com.wbrawner.trainterval.R
 import com.wbrawner.trainterval.shared.IntervalTimer
 import com.wbrawner.trainterval.shared.toIntervalDuration
+import dev.chrisbanes.accompanist.insets.navigationBarsPadding
+import dev.chrisbanes.accompanist.insets.statusBarsPadding
 
 @Composable
-fun TimerList(timerListViewModel: TimerListViewModel, navController: NavController) {
+fun TimerList(
+    timerListViewModel: TimerListViewModel,
+    navController: NavController,
+    onTimerClicked: (IntervalTimer) -> Unit
+) {
     val observedState = timerListViewModel.timerState.observeAsState()
     val scaffoldState = rememberScaffoldState()
     Scaffold(
         scaffoldState = scaffoldState,
         topBar = {
             TopAppBar(
+                modifier = Modifier.statusBarsPadding(),
                 title = {
                     BasicText(
                         text = "Timers",
@@ -41,11 +43,15 @@ fun TimerList(timerListViewModel: TimerListViewModel, navController: NavControll
                         )
                     )
                 },
-                backgroundColor = MaterialTheme.colors.background
+                backgroundColor = MaterialTheme.colors.background,
+                elevation = 0.dp
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { navController.navigate("new") }) {
+            FloatingActionButton(
+                modifier = Modifier.navigationBarsPadding(),
+                onClick = { navController.navigate("new") }
+            ) {
                 Image(imageVector = Icons.Default.Add, "Add")
             }
         },
@@ -57,9 +63,17 @@ fun TimerList(timerListViewModel: TimerListViewModel, navController: NavControll
                 modifier = Modifier.padding(padding),
                 style = TextStyle(color = MaterialTheme.colors.onSurface)
             )
-            is IntervalTimerListState.SuccessListState -> LazyColumn(Modifier.padding(padding)) {
+            is IntervalTimerListState.SuccessListState -> LazyColumn(
+                modifier = Modifier
+                    .padding(padding)
+                    .navigationBarsPadding()
+            ) {
                 items(state.timers.size) { i ->
-                    TimerListItem(state.timers[i])
+                    val timer = state.timers[i]
+                    TimerListItem(
+                        timer = timer,
+                        onTimerClicked = onTimerClicked
+                    )
                 }
             }
             is IntervalTimerListState.ErrorState -> BasicText(
@@ -77,18 +91,21 @@ fun TimerList(timerListViewModel: TimerListViewModel, navController: NavControll
 
 
 @Composable
-fun TimerListItem(timer: IntervalTimer) {
+fun TimerListItem(timer: IntervalTimer, onTimerClicked: (IntervalTimer) -> Unit) {
     Row(
         modifier = Modifier
-            .padding(8.dp)
+            .requiredHeightIn(min = 64.dp)
+            .clickable { onTimerClicked(timer) }
+            .padding(horizontal = 16.dp, vertical = 8.dp)
             .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column {
+        Column(modifier = Modifier.weight(1f)) {
             BasicText(text = timer.name, style = MaterialTheme.typography.body1)
-            BasicText(text = timer.description, style = MaterialTheme.typography.body2)
+            if (timer.description.isNotBlank()) {
+                BasicText(text = timer.description, style = MaterialTheme.typography.body2)
+            }
         }
-        Spacer(Modifier.fillMaxWidth())
         BasicText(
             text = timer.totalDuration.toIntervalDuration().toString(), style =
             MaterialTheme.typography.body2
@@ -100,5 +117,7 @@ fun TimerListItem(timer: IntervalTimer) {
 @Composable
 fun TimerListItem_Preview() {
     val timer = IntervalTimer(name = "Tabata", description = "A short, high-intensity workout")
-    TimerListItem(timer)
+    Surface {
+        TimerListItem(timer) {}
+    }
 }

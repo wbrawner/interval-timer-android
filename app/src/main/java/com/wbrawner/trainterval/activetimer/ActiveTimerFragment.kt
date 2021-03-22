@@ -1,45 +1,26 @@
 package com.wbrawner.trainterval.activetimer
 
-import android.animation.ArgbEvaluator
-import android.animation.ValueAnimator
 import android.content.Context
 import android.media.AudioManager
 import android.media.SoundPool
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
-import androidx.activity.result.ActivityResultCallback
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.ActivityResultRegistry
-import androidx.activity.result.contract.ActivityResultContract
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
-import androidx.lifecycle.viewModelScope
-import com.google.android.gms.wearable.*
-import com.robinhood.ticker.TickerUtils
-import com.wbrawner.trainterval.Logger
-import com.wbrawner.trainterval.R
-import com.wbrawner.trainterval.shared.IntervalTimerDao
-import com.wbrawner.trainterval.shared.IntervalTimerState
+import com.google.android.gms.wearable.DataClient
+import com.google.android.gms.wearable.MessageClient
+import com.google.android.gms.wearable.MessageEvent
+import com.google.android.gms.wearable.Wearable
 import com.wbrawner.trainterval.shared.IntervalTimerState.Companion.TIMER_ACTIONS_TOGGLE
-import com.wbrawner.trainterval.shared.IntervalTimerState.Companion.TIMER_STATE
 import com.wbrawner.trainterval.shared.Phase
-import com.wbrawner.trainterval.shared.toDataMap
-import kotlinx.coroutines.*
-import org.koin.android.ext.android.inject
-import org.koin.core.parameter.parametersOf
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancel
 
 class ActiveTimerFragment : Fragment(), MessageClient.OnMessageReceivedListener {
 
     private var coroutineScope: CoroutineScope? = null
 //    private val activeTimerViewModel: ActiveTimerViewModel by activityViewModels()
-    private val logger: Logger by inject(parameters = { parametersOf("ActiveTimerStore") })
-    private val timerDao: IntervalTimerDao by inject()
     private var timerId: Long = 0
     private lateinit var soundPool: SoundPool
     private val soundIds = mutableListOf<Int>()

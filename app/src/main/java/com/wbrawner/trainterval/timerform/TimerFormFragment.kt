@@ -1,30 +1,14 @@
 package com.wbrawner.trainterval.timerform
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import androidx.activity.result.ActivityResultCallback
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.ActivityResultRegistry
-import androidx.activity.result.contract.ActivityResultContract
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
-import com.google.android.material.transition.MaterialContainerTransform
-import com.wbrawner.trainterval.R
-import com.wbrawner.trainterval.shared.IntervalTimer
-import com.wbrawner.trainterval.timerform.IntervalTimerEditState.*
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
-import org.koin.android.ext.android.inject
 
 class TimerFormFragment : Fragment() {
 
     private var coroutineScope: CoroutineScope? = null
-    private val timerFormViewModel: TimerFormViewModel by inject()
+//    private val timerFormViewModel: TimerFormViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

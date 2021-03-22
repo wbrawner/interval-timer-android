@@ -3,43 +3,48 @@ package com.wbrawner.trainterval.activetimer
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.wbrawner.trainterval.Logger
 import com.wbrawner.trainterval.shared.IntervalTimer
 import com.wbrawner.trainterval.shared.IntervalTimerDao
 import com.wbrawner.trainterval.shared.IntervalTimerState
 import com.wbrawner.trainterval.shared.IntervalTimerState.LoadingState
 import com.wbrawner.trainterval.shared.IntervalTimerState.TimerRunningState
 import com.wbrawner.trainterval.shared.Phase
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import timber.log.Timber
+import javax.inject.Inject
 
-class ActiveTimerViewModel : ViewModel() {
+@HiltViewModel
+class ActiveTimerViewModel(
+    private val timerDao: IntervalTimerDao,
+    private val logger: Timber.Tree
+) : ViewModel() {
     val timerState: MutableLiveData<IntervalTimerState> = MutableLiveData(LoadingState)
     private var timerJob: Job? = null
     private lateinit var timer: IntervalTimer
-    private lateinit var logger: Logger
     private var timerComplete = false
     private var currentPhase = Phase.WARM_UP
     private var currentSet = 1
     private var currentRound = 1
     private var timeRemaining: Long = 0
 
-    suspend fun init(
-        logger: Logger,
-        timerDao: IntervalTimerDao,
-        timerId: Long
-    ) {
-        this.logger = logger
+    @Inject
+    constructor(timerDao: IntervalTimerDao) : this(timerDao, Timber.tag("ActiveTimerViewModel"))
+
+    fun loadTimer(timerId: Long) {
         if (timerJob == null || timer.id != timerId) {
-            logger.d(message = "Initializing with Timer id $timerId")
-            timer = timerDao.getById(timerId)
-            currentSet = timer.sets
-            currentRound = timer.cycles
-            timeRemaining = timer.warmUpDuration
-            currentPhase = Phase.WARM_UP
-            updateTimer(null)
+            logger.d("Initializing with Timer id $timerId")
+            viewModelScope.launch {
+                timer = timerDao.getById(timerId)
+                currentSet = timer.sets
+                currentRound = timer.cycles
+                timeRemaining = timer.warmUpDuration
+                currentPhase = Phase.WARM_UP
+                updateTimer(null)
+            }
         }
     }
 

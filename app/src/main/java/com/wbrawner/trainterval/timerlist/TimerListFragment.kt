@@ -1,30 +1,13 @@
 package com.wbrawner.trainterval.timerlist
 
 import android.os.Bundle
-import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import androidx.activity.result.ActivityResultCallback
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.ActivityResultRegistry
-import androidx.activity.result.contract.ActivityResultContract
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
-import androidx.recyclerview.widget.DividerItemDecoration
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.material.transition.MaterialElevationScale
-import com.wbrawner.trainterval.R
-import com.wbrawner.trainterval.shared.IntervalTimer
-import com.wbrawner.trainterval.timerlist.IntervalTimerListState.*
+
 //import kotlinx.android.synthetic.main.fragment_timer_list.*
-import org.koin.android.ext.android.inject
 
 class TimerListFragment : Fragment() {
 
-    private val timerListViewModel: TimerListViewModel by inject()
+//    private val timerListViewModel: TimerListViewModel by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

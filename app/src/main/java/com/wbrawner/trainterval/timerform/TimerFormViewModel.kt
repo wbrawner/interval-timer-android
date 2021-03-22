@@ -2,30 +2,39 @@ package com.wbrawner.trainterval.timerform
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.wbrawner.trainterval.Logger
+import androidx.lifecycle.viewModelScope
 import com.wbrawner.trainterval.shared.IntervalTimer
 import com.wbrawner.trainterval.shared.IntervalTimerDao
 import com.wbrawner.trainterval.timerform.IntervalTimerEditState.*
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+import timber.log.Timber
+import javax.inject.Inject
 
+@HiltViewModel
 class TimerFormViewModel(
-    private val logger: Logger,
-    private val timerDao: IntervalTimerDao
+    private val timerDao: IntervalTimerDao,
+    private val logger: Timber.Tree
 ) : ViewModel() {
     private lateinit var timer: IntervalTimer
     val timerState: MutableLiveData<IntervalTimerEditState> = MutableLiveData(LoadingState)
 
-    suspend fun init(timerId: Long? = null) {
-        timer = if (timerId == null) {
-            IntervalTimer()
-        } else {
-            timerDao.getById(timerId)
+    @Inject
+    constructor(timerDao: IntervalTimerDao) : this(timerDao, Timber.tag("TimerFormViewModel"))
+
+    fun loadTimer(timerId: Long? = null) {
+        viewModelScope.launch {
+            timer = if (timerId == null) {
+                IntervalTimer()
+            } else {
+                timerDao.getById(timerId)
+            }
+            logger.v("Timer: \n$timer")
+            timerState.postValue(EditTimerState(timer))
         }
-        logger.v(message = "Timer: ")
-        logger.v(message = timer.toString())
-        timerState.postValue(EditTimerState(timer))
     }
 
-    suspend fun saveTimer(
+    fun saveTimer(
         name: String,
         description: String,
         warmUpDuration: Long,
@@ -48,12 +57,14 @@ class TimerFormViewModel(
             sets = sets,
             cycles = cycles
         )
-        if (timer.id != null) {
-            timerDao.update(timer)
-        } else {
-            timer = timer.copy(id = timerDao.insert(timer))
+        viewModelScope.launch {
+            if (timer.id != null) {
+                timerDao.update(timer)
+            } else {
+                timer = timer.copy(id = timerDao.insert(timer))
+            }
+            timerState.postValue(EditTimerSavedState(timer))
         }
-        timerState.postValue(EditTimerSavedState(timer))
     }
 }
 

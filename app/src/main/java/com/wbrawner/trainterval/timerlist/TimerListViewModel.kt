@@ -2,27 +2,34 @@ package com.wbrawner.trainterval.timerlist
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.wbrawner.trainterval.Logger
 import com.wbrawner.trainterval.shared.IntervalTimer
 import com.wbrawner.trainterval.shared.IntervalTimerDao
 import com.wbrawner.trainterval.timerlist.IntervalTimerListState.*
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import timber.log.Timber
+import javax.inject.Inject
 
+@HiltViewModel
 class TimerListViewModel(
-    private val logger: Logger,
-    val timerDao: IntervalTimerDao
+    private val timerDao: IntervalTimerDao,
+    private val logger: Timber.Tree
 ) : ViewModel() {
     val timerState: MutableLiveData<IntervalTimerListState> = MutableLiveData(LoadingState)
     private val timers = ArrayList<IntervalTimer>()
+
+    // Had to separate this constructor like so for Hilt
+    @Inject
+    constructor(timerDao: IntervalTimerDao) : this(timerDao, Timber.tag("TimerListViewModel"))
 
     init {
         GlobalScope.launch {
             timerDao.getAll()
                 .collect {
-                    logger.d(message = "Received updated intervaltimer list")
-                    logger.d(message = it.toString())
+                    logger.d("Received updated intervaltimer list")
+                    logger.d(it.toString())
                     timers.clear()
                     timers.addAll(it)
                     if (timers.isEmpty()) {

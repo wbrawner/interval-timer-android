@@ -1,7 +1,5 @@
 package com.wbrawner.trainterval.shared.theme
 
-import android.content.Context
-import android.content.res.Configuration
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.darkColors
@@ -12,7 +10,7 @@ import androidx.compose.ui.graphics.Color
 private val LightThemeColors = lightColors(
     primary = Yellow500,
     primaryVariant = Orange500,
-    onPrimary = Color.White,
+    onPrimary = Color.Black,
     secondary = Red700,
     secondaryVariant = Red900,
     onSecondary = Color.White,

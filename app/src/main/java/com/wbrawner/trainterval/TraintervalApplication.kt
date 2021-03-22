@@ -2,50 +2,36 @@ package com.wbrawner.trainterval
 
 import android.app.Application
 import androidx.room.Room
+import com.wbrawner.trainterval.shared.IntervalTimerDao
 import com.wbrawner.trainterval.shared.TraintervalDatabase
-import com.wbrawner.trainterval.timerform.TimerFormViewModel
-import com.wbrawner.trainterval.timerlist.TimerListViewModel
-import org.koin.android.ext.koin.androidContext
-import org.koin.android.ext.koin.androidLogger
-import org.koin.core.context.startKoin
-import org.koin.core.parameter.parametersOf
-import org.koin.dsl.module
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.HiltAndroidApp
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 
+@HiltAndroidApp
 class TraintervalApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        startKoin {
-            androidLogger()
-            androidContext(this@TraintervalApplication)
-            modules(traintervalModule)
-        }
-
-        val lifecycleCallbacks =
-            TraintervalActivityLifecycleCallbacks(AndroidLogger("LifecycleCallbacks"))
+        val lifecycleCallbacks = TraintervalActivityLifecycleCallbacks()
         registerActivityLifecycleCallbacks(lifecycleCallbacks)
     }
 }
 
-val traintervalModule = module {
-    single {
-        Room.databaseBuilder(get(), TraintervalDatabase::class.java, "trainterval")
-            .build()
-    }
+@InstallIn(SingletonComponent::class)
+@Module
+object MainModule {
+    @Singleton
+    @Provides
+    fun providesDatabase(app: Application): TraintervalDatabase = Room.databaseBuilder(
+        app,
+        TraintervalDatabase::class.java, "trainterval"
+    ).build()
 
-    single {
-        get<TraintervalDatabase>().timerDao()
-    }
-
-    single {
-        TimerListViewModel(get(parameters = { parametersOf("TimerListStore") }), get())
-    }
-
-    factory {
-        TimerFormViewModel(get(parameters = { parametersOf("TimerFormStore") }), get())
-    }
-
-    factory<Logger> { params ->
-        AndroidLogger(params.component1())
-    }
+    @Singleton
+    @Provides
+    fun providesTimerDao(db: TraintervalDatabase): IntervalTimerDao = db.timerDao()
 }
