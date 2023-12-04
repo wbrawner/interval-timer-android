@@ -12,6 +12,24 @@ data class IntervalDuration(
         return if (hours > 0) "%02d:%02d:%02d".format(hours, minutes, seconds)
         else "%02d:%02d".format(minutes, seconds)
     }
+
+    companion object {
+        fun parse(s: String): IntervalDuration? {
+            val parts = s.split(":").map { it.toLongOrNull() }
+            if (parts.size !in 1..3 || parts.any { it == null }) {
+                return null
+            }
+            return when (parts.size) {
+                1 -> IntervalDuration(seconds = parts[0]!!)
+                2 -> IntervalDuration(minutes = parts[0]!!, seconds = parts[1]!!)
+                else -> IntervalDuration(
+                    hours = parts[0]!!,
+                    minutes = parts[1]!!,
+                    seconds = parts[2]!!,
+                )
+            }
+        }
+    }
 }
 
 fun IntervalDuration.toMillis(): Long {
@@ -20,16 +38,17 @@ fun IntervalDuration.toMillis(): Long {
             TimeUnit.SECONDS.toMillis(seconds)
 }
 
+fun IntervalDuration.toSeconds(): Long {
+    return TimeUnit.HOURS.toSeconds(hours) +
+            TimeUnit.MINUTES.toSeconds(minutes) +
+            seconds
+}
+
 private const val SECONDS_IN_HOUR = 3600
 private const val SECONDS_IN_MINUTE = 60
 
 fun Long.toIntervalDuration(): IntervalDuration {
-
-    if (this < 1000) {
-        return IntervalDuration(0, 0, 0)
-    }
-
-    var seconds: Long = this / 1000
+    var seconds: Long = this
     var hours: Long = 0
     if (seconds >= SECONDS_IN_HOUR) {
         hours = seconds / SECONDS_IN_HOUR

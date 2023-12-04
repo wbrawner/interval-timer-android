@@ -1,13 +1,15 @@
 package com.wbrawner.trainterval.timerlist
 
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.wbrawner.trainterval.shared.IntervalTimer
 import com.wbrawner.trainterval.shared.IntervalTimerDao
-import com.wbrawner.trainterval.timerlist.IntervalTimerListState.*
+import com.wbrawner.trainterval.timerlist.IntervalTimerListState.EmptyListState
+import com.wbrawner.trainterval.timerlist.IntervalTimerListState.LoadingState
+import com.wbrawner.trainterval.timerlist.IntervalTimerListState.SuccessListState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -17,57 +19,67 @@ class TimerListViewModel(
     private val timerDao: IntervalTimerDao,
     private val logger: Timber.Tree
 ) : ViewModel() {
-    val timerState: MutableLiveData<IntervalTimerListState> = MutableLiveData(LoadingState)
-    private val timers = ArrayList<IntervalTimer>()
+    val timerState: MutableStateFlow<IntervalTimerListState> = MutableStateFlow(LoadingState)
+    val effects: MutableSharedFlow<IntervalTimerListEffects> = MutableSharedFlow()
 
     // Had to separate this constructor like so for Hilt
     @Inject
     constructor(timerDao: IntervalTimerDao) : this(timerDao, Timber.tag("TimerListViewModel"))
 
     init {
-        GlobalScope.launch {
+        viewModelScope.launch {
             timerDao.getAll()
                 .collect {
-                    logger.d("Received updated intervaltimer list")
-                    logger.d(it.toString())
-                    timers.clear()
-                    timers.addAll(it)
-                    if (timers.isEmpty()) {
-                        timerState.postValue(EmptyListState)
+                    if (it.isEmpty()) {
+                        timerState.emit(EmptyListState)
                     } else {
-                        timerState.postValue(SuccessListState(timers))
+                        timerState.emit(SuccessListState(it))
                     }
                 }
         }
     }
 
     fun addTimer() {
-        timerState.value = CreateTimer
-        if (timers.isEmpty()) {
-            timerState.postValue(EmptyListState)
-        } else {
-            timerState.postValue(SuccessListState(timers))
+        viewModelScope.launch {
+            effects.emit(IntervalTimerListEffects.CreateTimer)
         }
     }
 
-    suspend fun editTimer(timer: IntervalTimer) {
-
+    fun editTimer(timer: IntervalTimer) {
+        viewModelScope.launch {
+            effects.emit(IntervalTimerListEffects.EditTimer(timer.id!!))
+        }
     }
 
-    suspend fun deleteTimer(timer: IntervalTimer) {
-
+    fun deleteTimer(timer: IntervalTimer) {
+        viewModelScope.launch {
+            (timerState.value as SuccessListState).apply {
+                timerState.emit(this.copy(showConfirmDeleteDialog = true, deleteTimerId = timer.id))
+            }
+        }
     }
 
-    suspend fun confirmDeleteTimer(timer: IntervalTimer) {
-
+    fun confirmDeleteTimer(delete: Boolean) {
+        viewModelScope.launch {
+            (timerState.value as SuccessListState).apply {
+                val timers = if (delete) {
+                    timerDao.delete(timers.first { it.id == deleteTimerId })
+                    timers.filter { it.id == deleteTimerId }
+                } else {
+                    timers
+                }
+                timerState.emit(copy(
+                    timers = timers,
+                    showConfirmDeleteDialog = false,
+                    deleteTimerId = null
+                ))
+            }
+        }
     }
 
     fun openTimer(timer: IntervalTimer) {
-        timerState.value = OpenTimer(timer.id!!)
-        if (timers.isEmpty()) {
-            timerState.postValue(EmptyListState)
-        } else {
-            timerState.postValue(SuccessListState(timers))
+        viewModelScope.launch {
+            effects.emit(IntervalTimerListEffects.OpenTimer(timer.id!!))
         }
     }
 }
@@ -75,13 +87,19 @@ class TimerListViewModel(
 /**
  * Used to represent each state on the main list view.
  */
-sealed class IntervalTimerListState {
-    object LoadingState : IntervalTimerListState()
-    object EmptyListState : IntervalTimerListState()
-    data class ConfirmDeleteTimerState(val timer: IntervalTimer) : IntervalTimerListState()
-    data class SuccessListState(val timers: List<IntervalTimer>) : IntervalTimerListState()
-    data class ErrorState(val message: String) : IntervalTimerListState()
-    object CreateTimer : IntervalTimerListState()
-    data class EditTimer(val timerId: Long) : IntervalTimerListState()
-    data class OpenTimer(val timerId: Long) : IntervalTimerListState()
+sealed interface IntervalTimerListState {
+    object LoadingState : IntervalTimerListState
+    object EmptyListState : IntervalTimerListState
+    data class SuccessListState(
+        val timers: List<IntervalTimer>,
+        val showConfirmDeleteDialog: Boolean = false,
+        val deleteTimerId: Long? = null
+    ) : IntervalTimerListState
+    data class ErrorState(val message: String) : IntervalTimerListState
+}
+
+sealed interface IntervalTimerListEffects {
+    object CreateTimer : IntervalTimerListEffects
+    data class EditTimer(val timerId: Long) : IntervalTimerListEffects
+    data class OpenTimer(val timerId: Long) : IntervalTimerListEffects
 }

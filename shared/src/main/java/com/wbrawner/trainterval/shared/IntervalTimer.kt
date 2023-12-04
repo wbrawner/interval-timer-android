@@ -14,11 +14,11 @@ data class IntervalTimer(
     @PrimaryKey val id: Long? = null,
     val name: String = "",
     val description: String = "",
-    val warmUpDuration: Long = TimeUnit.MINUTES.toMillis(5),
-    val lowIntensityDuration: Long = TimeUnit.SECONDS.toMillis(30),
-    val highIntensityDuration: Long = TimeUnit.MINUTES.toMillis(1),
-    val restDuration: Long = TimeUnit.MINUTES.toMillis(1),
-    val coolDownDuration: Long = TimeUnit.MINUTES.toMillis(5),
+    val warmUpDuration: Long = TimeUnit.MINUTES.toSeconds(5),
+    val lowIntensityDuration: Long = TimeUnit.SECONDS.toSeconds(30),
+    val highIntensityDuration: Long = TimeUnit.MINUTES.toSeconds(1),
+    val restDuration: Long = TimeUnit.MINUTES.toSeconds(1),
+    val coolDownDuration: Long = TimeUnit.MINUTES.toSeconds(5),
     val sets: Int = 4,
     val cycles: Int = 1
 ) {

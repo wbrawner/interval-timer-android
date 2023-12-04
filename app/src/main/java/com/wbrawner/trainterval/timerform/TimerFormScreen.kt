@@ -1,29 +1,26 @@
 package com.wbrawner.trainterval.timerform
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.navigate
+import com.wbrawner.trainterval.shared.IntervalDuration
 import com.wbrawner.trainterval.shared.IntervalTimer
-import dev.chrisbanes.accompanist.insets.navigationBarsPadding
-import dev.chrisbanes.accompanist.insets.statusBarsPadding
+import com.wbrawner.trainterval.shared.toIntervalDuration
+import com.wbrawner.trainterval.shared.toSeconds
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimerFormScreen(
     viewModel: TimerFormViewModel,
@@ -33,37 +30,45 @@ fun TimerFormScreen(
     LaunchedEffect(id) {
         viewModel.loadTimer(id)
     }
-    val observedState = viewModel.timerState.observeAsState()
-    val scaffoldState = rememberScaffoldState()
+    val state by viewModel.timerState.collectAsState()
     Scaffold(
-        scaffoldState = scaffoldState,
         topBar = {
             TopAppBar(
                 modifier = Modifier.statusBarsPadding(),
                 title = {
-                    BasicText(
-                        text = if (id == null) "New Timer" else "Edit Timer",
-                        style = MaterialTheme.typography.h6.merge(
-                            TextStyle(color = MaterialTheme.colors.onBackground)
-                        )
-                    )
+                    Text(if (id == null) "New Timer" else "Edit Timer")
                 },
-                backgroundColor = MaterialTheme.colors.background,
-                elevation = 0.dp
+                navigationIcon = {
+                    IconButton(onClick = { navController.navigateUp() }) {
+                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Cancel")
+                    }
+                }
             )
         }
-    ) {
-        when (val state = observedState.value) {
-            is IntervalTimerEditState.EditTimerState -> TimerForm(state.timer, viewModel::saveTimer)
+    ) { padding ->
+        when (state) {
+            is IntervalTimerEditState.EditTimerState -> TimerForm(
+                modifier = Modifier.padding(padding),
+                (state as IntervalTimerEditState.EditTimerState).timer,
+                viewModel::saveTimer
+            )
+
             is IntervalTimerEditState.ErrorState -> navController.navigate("new")
             is IntervalTimerEditState.EditTimerSavedState -> navController.navigateUp()
-            else -> CircularProgressIndicator()
+            else -> Box(
+                modifier = Modifier.padding(padding),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimerForm(
+    modifier: Modifier,
     timer: IntervalTimer,
     saveTimer: (
         name: String,
@@ -79,10 +84,12 @@ fun TimerForm(
 ) {
     val scrollState = rememberScrollState()
     Column(
-        modifier = Modifier
+        modifier = modifier
+            .fillMaxSize()
             .verticalScroll(scrollState)
             .padding(8.dp)
-            .navigationBarsPadding()
+            .imePadding(),
+        verticalArrangement = spacedBy(8.dp)
     ) {
         val (title: String, setTitle: (String) -> Unit) = remember { mutableStateOf(timer.name) }
         val (description, setDescription) = remember { mutableStateOf(timer.description) }
@@ -93,89 +100,152 @@ fun TimerForm(
         val (rest, setRest) = remember { mutableStateOf(timer.restDuration) }
         val (sets, setSets) = remember { mutableStateOf(timer.sets) }
         val (cycles, setCycles) = remember { mutableStateOf(timer.cycles) }
-        val commonModifier = Modifier
-            .padding(8.dp)
-            .fillMaxWidth()
         OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
             value = title,
             onValueChange = setTitle,
-            label = { BasicText("Title") },
-            modifier = commonModifier
+            label = { Text("Title") },
         )
         OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
             value = description,
             onValueChange = setDescription,
-            label = { BasicText("Description") },
-            modifier = commonModifier
+            label = { Text("Description") },
         )
-        OutlinedTextField(
-            value = warmUp.toString(),
-            onValueChange = { setWarmUp(it.toLong()) },
-            label = { BasicText("Warm-Up") },
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-            modifier = commonModifier
+        DurationInput(
+            modifier = Modifier.fillMaxWidth(),
+            value = warmUp,
+            onValueChange = setWarmUp,
+            label = "Warm-Up",
         )
-        OutlinedTextField(
-            value = lowIntensity.toString(),
-            onValueChange = { setLowIntensity(it.toLong()) },
-            label = { BasicText("Low Intensity") },
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-            modifier = commonModifier
+        DurationInput(
+            modifier = Modifier.fillMaxWidth(),
+            value = lowIntensity,
+            onValueChange = setLowIntensity,
+            label = "Low Intensity",
         )
-        OutlinedTextField(
-            value = highIntensity.toString(),
-            onValueChange = { setHighIntensity(it.toLong()) },
-            label = { BasicText("High Intensity") },
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-            modifier = commonModifier
+        DurationInput(
+            modifier = Modifier.fillMaxWidth(),
+            value = highIntensity,
+            onValueChange = setHighIntensity,
+            label = "High Intensity",
         )
-        OutlinedTextField(
-            value = rest.toString(),
-            onValueChange = { setRest(it.toLong()) },
-            label = { BasicText("Rest") },
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-            modifier = commonModifier
+        DurationInput(
+            modifier = Modifier.fillMaxWidth(),
+            value = rest,
+            onValueChange = setRest,
+            label = "Rest",
         )
-        OutlinedTextField(
-            value = coolDown.toString(),
-            onValueChange = { setCoolDown(it.toLong()) },
-            label = { BasicText("Cool Down") },
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-            modifier = commonModifier
+        DurationInput(
+            modifier = Modifier.fillMaxWidth(),
+            value = coolDown,
+            onValueChange = setCoolDown,
+            label = "Cool Down",
         )
-        OutlinedTextField(
-            value = sets.toString(),
-            onValueChange = { setSets(it.toInt()) },
-            label = { BasicText("Sets") },
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-            modifier = commonModifier
+        NumberInput(
+            modifier = Modifier.fillMaxWidth(),
+            value = sets,
+            onValueChange = setSets,
+            label = "Sets",
         )
-        OutlinedTextField(
-            value = cycles.toString(),
-            onValueChange = { setCycles(it.toInt()) },
-            label = { BasicText("Cycles") },
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-            modifier = commonModifier
+        NumberInput(
+            modifier = Modifier.fillMaxWidth(),
+            value = cycles,
+            onValueChange = setCycles,
+            label = "Cycles",
         )
-        Button(onClick = {
-            saveTimer(
-                title,
-                description,
-                warmUp,
-                lowIntensity,
-                highIntensity,
-                rest,
-                coolDown,
-                sets,
-                cycles
-            )
-        }, modifier = commonModifier) {
-            BasicText(
-                "Save",
-                style = TextStyle.Default.copy(color = MaterialTheme.colors.onPrimary)
-            )
+        Button(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = {
+                saveTimer(
+                    title,
+                    description,
+                    warmUp,
+                    lowIntensity,
+                    highIntensity,
+                    rest,
+                    coolDown,
+                    sets,
+                    cycles
+                )
+            }
+        ) {
+            Text("Save")
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DurationInput(
+    modifier: Modifier,
+    label: String,
+    value: Long,
+    onValueChange: (Long) -> Unit
+) {
+    val (input, setInput) = remember { mutableStateOf(value.toIntervalDuration().toString()) }
+    val (isError, setError) = remember { mutableStateOf(false) }
+    // TODO: Use a triple spinner instead of the text field
+    OutlinedTextField(
+        modifier = modifier,
+        value = input,
+        onValueChange = {
+            setInput(it)
+            IntervalDuration.parse(it)
+                ?.let { duration ->
+                    setError(false)
+                    onValueChange(duration.toSeconds())
+                }
+                ?: setError(true)
+        },
+        label = { Text(label) },
+        isError = isError,
+        supportingText = {
+            if (isError) {
+                Text(
+                    text = "Invalid duration format. Try HH:mm:ss or mm:ss instead.",
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+        }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun NumberInput(
+    modifier: Modifier,
+    label: String,
+    value: Int,
+    onValueChange: (Int) -> Unit
+) {
+    val (input, setInput) = remember { mutableStateOf(value.toString()) }
+    val (isError, setError) = remember { mutableStateOf(false) }
+    // TODO: Use a spinner instead of the text field
+    OutlinedTextField(
+        modifier = modifier,
+        value = input,
+        onValueChange = {
+            setInput(it)
+            it.toIntOrNull()
+                ?.let { number ->
+                    setError(false)
+                    onValueChange(number)
+                }
+                ?: setError(true)
+        },
+        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+        label = { Text(label) },
+        isError = isError,
+        supportingText = {
+            if (isError) {
+                Text(
+                    text = "Invalid input. Please enter a number",
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+        }
+    )
 }
 
 @Preview
@@ -183,6 +253,6 @@ fun TimerForm(
 fun TimerForm_Preview() {
     Surface {
         val timer = IntervalTimer()
-        TimerForm(timer) { _, _, _, _, _, _, _, _, _ -> }
+        TimerForm(modifier = Modifier, timer) { _, _, _, _, _, _, _, _, _ -> }
     }
 }

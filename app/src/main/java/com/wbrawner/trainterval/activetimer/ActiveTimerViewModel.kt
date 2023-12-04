@@ -1,10 +1,10 @@
 package com.wbrawner.trainterval.activetimer
 
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wbrawner.trainterval.shared.IntervalTimer
 import com.wbrawner.trainterval.shared.IntervalTimerDao
+import com.wbrawner.trainterval.shared.IntervalTimerEffects
 import com.wbrawner.trainterval.shared.IntervalTimerState
 import com.wbrawner.trainterval.shared.IntervalTimerState.LoadingState
 import com.wbrawner.trainterval.shared.IntervalTimerState.TimerRunningState
@@ -12,6 +12,8 @@ import com.wbrawner.trainterval.shared.Phase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -22,7 +24,8 @@ class ActiveTimerViewModel(
     private val timerDao: IntervalTimerDao,
     private val logger: Timber.Tree
 ) : ViewModel() {
-    val timerState: MutableLiveData<IntervalTimerState> = MutableLiveData(LoadingState)
+    val timerState: MutableStateFlow<IntervalTimerState> = MutableStateFlow(LoadingState)
+    val effects: MutableSharedFlow<IntervalTimerEffects> = MutableSharedFlow()
     private var timerJob: Job? = null
     private lateinit var timer: IntervalTimer
     private var timerComplete = false
@@ -62,11 +65,14 @@ class ActiveTimerViewModel(
 
     private fun startTimer(previousPhase: Phase?) {
         viewModelScope.launch {
+            if (currentPhase == Phase.WARM_UP && timeRemaining == timer.warmUpDuration) {
+                effects.emit(IntervalTimerEffects.PlaySound(currentPhase))
+            }
             timerJob = launch {
                 updateTimer(previousPhase)
                 while (coroutineContext.isActive && timerJob != null) {
                     delay(1_000)
-                    timeRemaining -= 1_000
+                    timeRemaining -= 1
                     // We need to recalculate the previous phase on each iteration
                     val previousPhaseOngoing = currentPhase
                     if (timeRemaining <= 0) {
@@ -85,6 +91,7 @@ class ActiveTimerViewModel(
             Phase.COOL_DOWN -> {
                 timeRemaining = 0
             }
+
             else -> {
                 previousPhase = currentPhase
                 goForward()
@@ -98,8 +105,8 @@ class ActiveTimerViewModel(
     }
 
     private fun updateTimer(previousPhase: Phase?) {
-        timerState.postValue(
-            TimerRunningState(
+        viewModelScope.launch {
+            val state = TimerRunningState(
                 timer,
                 timeRemaining,
                 currentSet,
@@ -108,7 +115,8 @@ class ActiveTimerViewModel(
                 previousPhase,
                 timerJob != null
             )
-        )
+            timerState.emit(state)
+        }
     }
 
     private fun goForward() {
@@ -118,10 +126,12 @@ class ActiveTimerViewModel(
                 currentPhase = Phase.LOW_INTENSITY
                 timeRemaining = timer.lowIntensityDuration
             }
+
             Phase.LOW_INTENSITY -> {
                 currentPhase = Phase.HIGH_INTENSITY
                 timeRemaining = timer.highIntensityDuration
             }
+
             Phase.HIGH_INTENSITY -> {
                 when {
                     currentSet > 1 -> {
@@ -129,26 +139,35 @@ class ActiveTimerViewModel(
                         currentPhase = Phase.LOW_INTENSITY
                         timeRemaining = timer.lowIntensityDuration
                     }
+
                     currentRound > 1 -> {
                         currentRound--
                         currentPhase = Phase.REST
                         timeRemaining = timer.restDuration
                     }
+
                     else -> {
                         currentPhase = Phase.COOL_DOWN
                         timeRemaining = timer.coolDownDuration
                     }
                 }
             }
+
             Phase.REST -> {
                 currentSet = timer.sets
                 currentPhase = Phase.LOW_INTENSITY
                 timeRemaining = timer.lowIntensityDuration
             }
+
             Phase.COOL_DOWN -> {
                 timeRemaining = 0
                 timerJob?.cancel()
                 timerJob = null
+            }
+        }
+        if ((timerState.value as? TimerRunningState)?.isRunning == true) {
+            viewModelScope.launch {
+                effects.emit(IntervalTimerEffects.PlaySound(currentPhase))
             }
         }
     }
@@ -160,16 +179,19 @@ class ActiveTimerViewModel(
             Phase.WARM_UP -> {
                 timeRemaining = timer.warmUpDuration
             }
+
             Phase.LOW_INTENSITY -> {
                 when {
                     currentSet == timer.sets && currentRound == timer.cycles -> {
                         currentPhase = Phase.WARM_UP
                         timeRemaining = timer.warmUpDuration
                     }
+
                     currentSet == timer.sets && currentRound < timer.cycles -> {
                         currentPhase = Phase.REST
                         timeRemaining = timer.restDuration
                     }
+
                     else -> {
                         currentSet++
                         currentPhase = Phase.HIGH_INTENSITY
@@ -177,16 +199,19 @@ class ActiveTimerViewModel(
                     }
                 }
             }
+
             Phase.HIGH_INTENSITY -> {
                 currentPhase = Phase.LOW_INTENSITY
                 timeRemaining = timer.lowIntensityDuration
             }
+
             Phase.REST -> {
                 currentRound++
                 currentPhase = Phase.HIGH_INTENSITY
                 currentSet = timer.sets
                 timeRemaining = timer.highIntensityDuration
             }
+
             Phase.COOL_DOWN -> {
                 currentPhase = Phase.HIGH_INTENSITY
                 timeRemaining = timer.highIntensityDuration
@@ -196,6 +221,11 @@ class ActiveTimerViewModel(
             startTimer(previousPhase)
         } else {
             updateTimer(previousPhase)
+        }
+        if ((timerState.value as? TimerRunningState)?.isRunning == true) {
+            viewModelScope.launch {
+                effects.emit(IntervalTimerEffects.PlaySound(currentPhase))
+            }
         }
     }
 }

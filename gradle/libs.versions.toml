@@ -1,0 +1,80 @@
+[versions]
+androidx-appcompat = "1.6.1"
+androidx-core = "1.12.0"
+androidx-splash = "1.0.1"
+androidx-wear = "1.3.0"
+compose = "1.5.4"
+compose-compiler = "1.5.3"
+compose-material = "1.5.4"
+compose-material3 = "1.1.2"
+espresso = "3.5.1"
+hilt-android = "2.48"
+kotlin = "1.9.10"
+kotlinx-coroutines = "1.7.2"
+kotlinx-serialization = "1.5.1"
+maxSdk = "34"
+material = "1.10.0"
+minSdk = "23"
+navigation = "2.7.4"
+play-wearable = "18.1.0"
+room = "2.6.0"
+support-wearable = "2.9.0"
+timber = "5.0.1"
+versionCode = "1"
+versionName = "1.0"
+
+[libraries]
+android-gradle = { module = "com.android.tools.build:gradle", version = "8.1.2" }
+androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidx-appcompat" }
+androidx-core = { module = "androidx.core:core-ktx", version.ref = "androidx-core" }
+androidx-splash = { module = "androidx.core:core-splashscreen", version.ref = "androidx-splash" }
+androidx-wear = { module = "androidx.wear:wear", version.ref = "androidx-wear" }
+compose-activity = { module = "androidx.activity:activity-compose", version = "1.8.0" }
+compose-material = { module = "androidx.compose.material:material", version.ref = "compose-material" }
+compose-material-icons = { module = "androidx.compose.material:material-icons-extended", version.ref = "compose-material" }
+compose-material3 = { module = "androidx.compose.material3:material3", version.ref = "compose-material3" }
+compose-material3-window = { module = "androidx.compose.material3:material3-window-size-class", version.ref = "compose-material3" }
+compose-test = { module = "androidx.compose.ui:ui-test-junit4", version.ref = "compose" }
+compose-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose" }
+compose-ui = { module = "androidx.compose.ui:ui", version.ref = "compose" }
+dagger-hilt = { module = "com.google.dagger:hilt-android-gradle-plugin", version.ref = "hilt-android" }
+espresso = { module = "androidx.test.espresso:espresso-core", version.ref = "espresso" }
+hilt-android-core = { module = "com.google.dagger:hilt-android", version.ref = "hilt-android" }
+hilt-android-kapt = { module = "com.google.dagger:hilt-compiler", version.ref = "hilt-android" }
+hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version = "1.0.0" }
+junit = { module = "junit:junit", version = "4.13.2" }
+kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
+kotlin-serialization = { module = "org.jetbrains.kotlin:kotlin-serialization", version.ref = "kotlin" }
+kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+material = { module = "com.google.android.material:material", version.ref = "material" }
+navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation" }
+play-wearable = { module = "com.google.android.gms:play-services-wearable", version.ref = "play-wearable" }
+room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
+room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
+room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
+room-testing = { module = "androidx.room:room-testing", version.ref = "room" }
+test-ext = { module = "androidx.test.ext:junit", version = "1.1.5" }
+timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
+support-wearable = { module = "com.google.android.support:wearable", version.ref = "support-wearable" }
+wearable-wearable = { module = "com.google.android.wearable:wearable", version.ref = "support-wearable" }
+
+[bundles]
+compose = [
+    "compose-activity",
+    "compose-material",
+    "compose-material-icons",
+    "compose-material3",
+    "compose-material3-window",
+    "compose-tooling",
+    "compose-ui",
+    "navigation-compose"
+]
+coroutines = ["kotlinx-coroutines-core", "kotlinx-coroutines-android"]
+plugins = ["android-gradle", "kotlin-gradle", "dagger-hilt", "kotlin-serialization"]
+
+[plugins]
+ksp = { id = "com.google.devtools.ksp", version = "1.9.20-1.0.13" }

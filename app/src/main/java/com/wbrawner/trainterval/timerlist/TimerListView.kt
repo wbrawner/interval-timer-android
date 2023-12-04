@@ -1,50 +1,51 @@
 package com.wbrawner.trainterval.timerlist
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.text.BasicText
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.navigate
 import com.wbrawner.trainterval.shared.IntervalTimer
 import com.wbrawner.trainterval.shared.toIntervalDuration
-import dev.chrisbanes.accompanist.insets.navigationBarsPadding
-import dev.chrisbanes.accompanist.insets.statusBarsPadding
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimerList(
     timerListViewModel: TimerListViewModel,
     navController: NavController,
     onTimerClicked: (IntervalTimer) -> Unit
 ) {
-    val observedState = timerListViewModel.timerState.observeAsState()
-    val scaffoldState = rememberScaffoldState()
+    val state by timerListViewModel.timerState.collectAsState()
+    LaunchedEffect(timerListViewModel) {
+        timerListViewModel.effects.collect {
+            when (it) {
+                is IntervalTimerListEffects.OpenTimer -> navController.navigate("timers/${it.timerId}")
+                is IntervalTimerListEffects.EditTimer -> navController.navigate("edit/${it.timerId}")
+                is IntervalTimerListEffects.CreateTimer -> navController.navigate("new")
+            }
+        }
+    }
     Scaffold(
-        scaffoldState = scaffoldState,
         topBar = {
             TopAppBar(
                 modifier = Modifier.statusBarsPadding(),
                 title = {
-                    BasicText(
-                        text = "Timers",
-                        style = MaterialTheme.typography.h6.merge(
-                            TextStyle(color = MaterialTheme.colors.onBackground)
-                        )
-                    )
-                },
-                backgroundColor = MaterialTheme.colors.background,
-                elevation = 0.dp
+                    Text("Timers")
+                }
             )
         },
         floatingActionButton = {
@@ -57,59 +58,104 @@ fun TimerList(
         },
         floatingActionButtonPosition = FabPosition.End
     ) { padding ->
-        when (val state = observedState.value) {
-            is IntervalTimerListState.EmptyListState -> BasicText(
+        when (state) {
+            is IntervalTimerListState.EmptyListState -> Text(
                 "Add a new timer to get started.",
-                modifier = Modifier.padding(padding),
-                style = TextStyle(color = MaterialTheme.colors.onSurface)
-            )
-            is IntervalTimerListState.SuccessListState -> LazyColumn(
                 modifier = Modifier
                     .padding(padding)
-                    .navigationBarsPadding()
+                    .padding(16.dp),
+            )
+
+            is IntervalTimerListState.SuccessListState -> Box(
+                modifier = Modifier
+                    .padding(padding)
+                    .fillMaxSize()
             ) {
-                items(state.timers.size) { i ->
-                    val timer = state.timers[i]
-                    TimerListItem(
-                        timer = timer,
-                        onTimerClicked = onTimerClicked
+                val state = state as IntervalTimerListState.SuccessListState
+                LazyColumn() {
+                    items(state.timers.size) { i ->
+                        val timer = state.timers[i]
+                        TimerListItem(
+                            timer = timer,
+                            onTimerClicked = onTimerClicked,
+                            editTimer = timerListViewModel::editTimer,
+                            deleteTimer = timerListViewModel::deleteTimer
+                        )
+                    }
+                }
+                if (state.showConfirmDeleteDialog) {
+                    AlertDialog(
+                        onDismissRequest = { timerListViewModel.confirmDeleteTimer(false) },
+                        title = {
+                            Text("Are you sure you want to delete this timer?")
+                        },
+                        text = {
+                            Text("This cannot be undone.")
+                        },
+                        dismissButton = {
+                            TextButton({ timerListViewModel.confirmDeleteTimer(false) }) {
+                                Text("Cancel")
+                            }
+                        },
+                        confirmButton = {
+                            TextButton({ timerListViewModel.confirmDeleteTimer(true) }) {
+                                Text("Delete")
+                            }
+                        }
                     )
                 }
             }
-            is IntervalTimerListState.ErrorState -> BasicText(
-                state.message,
-                modifier = Modifier.padding(padding),
-                style = TextStyle(color = MaterialTheme.colors.onSurface)
+
+            is IntervalTimerListState.ErrorState -> Text(
+                (state as IntervalTimerListState.ErrorState).message,
+                modifier = Modifier.padding(padding)
             )
-            is IntervalTimerListState.CreateTimer -> navController.navigate("new")
-            is IntervalTimerListState.EditTimer -> navController.navigate("edit/${state.timerId}")
-            is IntervalTimerListState.OpenTimer -> navController.navigate("timer/${state.timerId}")
-            else -> CircularProgressIndicator()
+
+            else -> Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
         }
     }
 }
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun TimerListItem(timer: IntervalTimer, onTimerClicked: (IntervalTimer) -> Unit) {
+fun TimerListItem(
+    timer: IntervalTimer,
+    onTimerClicked: (IntervalTimer) -> Unit,
+    editTimer: (IntervalTimer) -> Unit,
+    deleteTimer: (IntervalTimer) -> Unit,
+) {
+    val (isMenuShown, showMenu) = remember { mutableStateOf(false) }
     Row(
         modifier = Modifier
             .requiredHeightIn(min = 64.dp)
-            .clickable { onTimerClicked(timer) }
+            .combinedClickable(
+                onClick = { onTimerClicked(timer) },
+                onLongClick = { showMenu(true) }
+            )
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            BasicText(text = timer.name, style = MaterialTheme.typography.body1)
+            Text(text = timer.name, style = MaterialTheme.typography.bodyLarge)
             if (timer.description.isNotBlank()) {
-                BasicText(text = timer.description, style = MaterialTheme.typography.body2)
+                Text(text = timer.description, style = MaterialTheme.typography.bodyMedium)
             }
         }
-        BasicText(
+        Text(
             text = timer.totalDuration.toIntervalDuration().toString(), style =
-            MaterialTheme.typography.body2
+            MaterialTheme.typography.bodySmall
         )
+        DropdownMenu(expanded = isMenuShown, onDismissRequest = { showMenu(false) }) {
+            DropdownMenuItem(text = { Text("Edit") }, onClick = { editTimer(timer) })
+            DropdownMenuItem(text = { Text("Delete") }, onClick = { deleteTimer(timer) })
+        }
     }
 }
 
@@ -118,6 +164,6 @@ fun TimerListItem(timer: IntervalTimer, onTimerClicked: (IntervalTimer) -> Unit)
 fun TimerListItem_Preview() {
     val timer = IntervalTimer(name = "Tabata", description = "A short, high-intensity workout")
     Surface {
-        TimerListItem(timer) {}
+        TimerListItem(timer, {}, {}, {})
     }
 }

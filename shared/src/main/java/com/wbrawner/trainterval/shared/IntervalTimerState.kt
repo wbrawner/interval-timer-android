@@ -6,8 +6,8 @@ import java.io.Serializable
 /**
  * Used to represent the state while a user has a specific timer open.
  */
-sealed class IntervalTimerState : Serializable {
-    object LoadingState : IntervalTimerState()
+sealed interface IntervalTimerState : Serializable {
+    object LoadingState : IntervalTimerState
     class TimerRunningState(
         val timerName: String,
         val timeRemaining: String,
@@ -18,7 +18,7 @@ sealed class IntervalTimerState : Serializable {
         val previousPhase: Phase?,
         val isRunning: Boolean,
         val vibrate: Boolean
-    ) : IntervalTimerState() {
+    ) : IntervalTimerState {
         constructor(
             timer: IntervalTimer,
             timeRemaining: Long,
@@ -42,12 +42,15 @@ sealed class IntervalTimerState : Serializable {
         )
     }
 
-    object ExitState : IntervalTimerState()
-
     companion object {
         const val TIMER_STATE = "/timer/state"
         const val TIMER_ACTIONS_TOGGLE = "/timer/actions/toggle"
     }
+}
+
+sealed interface IntervalTimerEffects {
+    object Close : IntervalTimerEffects
+    data class PlaySound(val phase: Phase) : IntervalTimerEffects
 }
 
 const val KEY_STATE = "com.wbrawner.trainterval.timerState"
@@ -72,25 +75,25 @@ fun IntervalTimerState.toDataMap(): DataMap {
             dataMap.putAll(this.toDataMap())
             dataMap.putString(KEY_STATE, STATE_ACTIVE)
         }
-        is IntervalTimerState.ExitState -> dataMap.putString(KEY_STATE, STATE_EXIT)
+
     }
     return dataMap
 }
 
 fun DataMap.toIntervalTimerState(): IntervalTimerState? = when (getString(KEY_STATE)) {
     STATE_LOADING -> IntervalTimerState.LoadingState
-    STATE_EXIT -> IntervalTimerState.ExitState
     STATE_ACTIVE -> IntervalTimerState.TimerRunningState(
-        getString(KEY_TIMER_NAME),
-        getString(KEY_TIME_REMAINING),
+        getString(KEY_TIMER_NAME, ""),
+        getString(KEY_TIME_REMAINING, ""),
         getInt(KEY_CURRENT_SET),
         getInt(KEY_CURRENT_ROUND),
         getInt(KEY_SOUND_ID),
-        Phase.valueOf(getString(KEY_PHASE)),
+        Phase.valueOf(getString(KEY_PHASE, Phase.WARM_UP.name)),
         getString(KEY_PREVIOUS_PHASE)?.let { Phase.valueOf(it) },
         getBoolean(KEY_RUNNING),
         getBoolean(KEY_VIBRATE)
     )
+
     else -> null
 }
 
@@ -105,7 +108,9 @@ fun IntervalTimerState.TimerRunningState.toDataMap(): DataMap {
             putInt(KEY_SOUND_ID, it)
         }
         putString(KEY_PHASE, state.phase.name)
-        putString(KEY_PREVIOUS_PHASE, state.previousPhase?.name)
+        state.previousPhase?.name?.let {
+            putString(KEY_PREVIOUS_PHASE, it)
+        }
         putBoolean(KEY_RUNNING, state.isRunning)
         putBoolean(KEY_VIBRATE, state.vibrate)
     }

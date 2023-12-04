@@ -1,12 +1,16 @@
 package com.wbrawner.trainterval.timerform
 
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.wbrawner.trainterval.shared.IntervalTimer
 import com.wbrawner.trainterval.shared.IntervalTimerDao
-import com.wbrawner.trainterval.timerform.IntervalTimerEditState.*
+import com.wbrawner.trainterval.timerform.IntervalTimerEditState.EditTimerSavedState
+import com.wbrawner.trainterval.timerform.IntervalTimerEditState.EditTimerState
+import com.wbrawner.trainterval.timerform.IntervalTimerEditState.LoadingState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -17,7 +21,8 @@ class TimerFormViewModel(
     private val logger: Timber.Tree
 ) : ViewModel() {
     private lateinit var timer: IntervalTimer
-    val timerState: MutableLiveData<IntervalTimerEditState> = MutableLiveData(LoadingState)
+    private val _timerState: MutableStateFlow<IntervalTimerEditState> = MutableStateFlow(LoadingState)
+    val timerState: StateFlow<IntervalTimerEditState> = _timerState.asStateFlow()
 
     @Inject
     constructor(timerDao: IntervalTimerDao) : this(timerDao, Timber.tag("TimerFormViewModel"))
@@ -30,7 +35,7 @@ class TimerFormViewModel(
                 timerDao.getById(timerId)
             }
             logger.v("Timer: \n$timer")
-            timerState.postValue(EditTimerState(timer))
+            _timerState.emit(EditTimerState(timer))
         }
     }
 
@@ -45,25 +50,25 @@ class TimerFormViewModel(
         sets: Int,
         cycles: Int
     ) {
-        timerState.postValue(LoadingState)
-        timer = timer.copy(
-            name = name,
-            description = description,
-            warmUpDuration = warmUpDuration,
-            lowIntensityDuration = lowIntensityDuration,
-            highIntensityDuration = highIntensityDuration,
-            restDuration = restDuration,
-            coolDownDuration = coolDownDuration,
-            sets = sets,
-            cycles = cycles
-        )
         viewModelScope.launch {
+            _timerState.emit(LoadingState)
+            timer = timer.copy(
+                name = name,
+                description = description,
+                warmUpDuration = warmUpDuration,
+                lowIntensityDuration = lowIntensityDuration,
+                highIntensityDuration = highIntensityDuration,
+                restDuration = restDuration,
+                coolDownDuration = coolDownDuration,
+                sets = sets,
+                cycles = cycles
+            )
             if (timer.id != null) {
                 timerDao.update(timer)
             } else {
                 timer = timer.copy(id = timerDao.insert(timer))
             }
-            timerState.postValue(EditTimerSavedState(timer))
+            _timerState.emit(EditTimerSavedState(timer))
         }
     }
 }
