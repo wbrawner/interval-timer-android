@@ -12,6 +12,7 @@ import androidx.core.math.MathUtils
 import com.wbrawner.trainterval.shared.IntervalDuration
 import com.wbrawner.trainterval.shared.toIntervalDuration
 import com.wbrawner.trainterval.shared.toMillis
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 private const val MIN_DURATION = 0L
@@ -25,8 +26,7 @@ class DurationPicker @JvmOverloads constructor(
     @StyleRes defStyleRes: Int = 0
 ) : FrameLayout(context, attrs, defStyleAttr, defStyleRes) {
 
-    private var intervalDuration =
-        IntervalDuration()
+    private var intervalDuration = IntervalDuration.create()
     var duration: Long
         get() = intervalDuration.toMillis()
         set(value) {
@@ -47,7 +47,7 @@ class DurationPicker @JvmOverloads constructor(
         hours.maxValue = 23
         hours.setOnValueChangedListener { _, _, newVal ->
             intervalDuration = intervalDuration.copy(hours = newVal.toLong())
-            Log.v("DurationPicker", "Updated hours: $newVal")
+            Timber.v("DurationPicker", "Updated hours: $newVal")
         }
         hours.setFormatter(numberFormatter())
         minutes = view.findViewById(R.id.minutes)
@@ -55,7 +55,7 @@ class DurationPicker @JvmOverloads constructor(
         minutes.maxValue = 59
         minutes.setOnValueChangedListener { _, _, newVal ->
             intervalDuration = intervalDuration.copy(minutes = newVal.toLong())
-            Log.v("DurationPicker", "Updated minutes: $newVal")
+            Timber.v("DurationPicker", "Updated minutes: $newVal")
         }
         minutes.setFormatter(numberFormatter())
         seconds = view.findViewById(R.id.seconds)
@@ -63,7 +63,7 @@ class DurationPicker @JvmOverloads constructor(
         seconds.maxValue = 59
         seconds.setOnValueChangedListener { _, _, newVal ->
             intervalDuration = intervalDuration.copy(seconds = newVal.toLong())
-            Log.v("DurationPicker", "Updated seconds: $newVal")
+            Timber.v("DurationPicker", "Updated seconds: $newVal")
         }
         seconds.setFormatter(numberFormatter())
     }

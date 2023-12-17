@@ -7,6 +7,11 @@ import android.view.WindowInsetsController
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -41,7 +46,22 @@ class MainActivity : AppCompatActivity() {
             val navController = rememberNavController()
             TraintervalTheme {
                 Surface(color = MaterialTheme.colors.background) {
-                    NavHost(navController, startDestination = "timers") {
+                    NavHost(
+                        navController,
+                        startDestination = "timers",
+                        enterTransition = {
+                            fadeIn() + slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
+                        },
+                        exitTransition = {
+                            fadeOut() + slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
+                        },
+                        popEnterTransition = {
+                            fadeIn()
+                        },
+                        popExitTransition = {
+                            fadeOut() + slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
+                        }
+                    ) {
                         composable("new") {
                             TimerFormScreen(timerFormViewModel, navController)
                         }
@@ -51,7 +71,19 @@ class MainActivity : AppCompatActivity() {
                             }
                         }
                         composable(
-                            "timers/{timerId}",
+                            route = "timers/{timerId}",
+                            enterTransition = {
+                                fadeIn() + slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Start)
+                            },
+                            exitTransition = {
+                                fadeOut() + slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.End)
+                            },
+                            popEnterTransition = {
+                                fadeIn()
+                            },
+                            popExitTransition = {
+                                fadeOut() + slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.End)
+                            },
                             arguments = listOf(navArgument("timerId") {
                                 type = NavType.LongType
                             })
@@ -59,7 +91,7 @@ class MainActivity : AppCompatActivity() {
                             ActiveTimerScreen(
                                 hiltViewModel(),
                                 navController::navigateUp,
-                                backStackEntry.arguments?.getLong("timerId")?: 0L
+                                backStackEntry.arguments?.getLong("timerId") ?: 0L
                             )
                         }
                         composable(

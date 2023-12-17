@@ -20,9 +20,8 @@ import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
-class ActiveTimerViewModel(
-    private val timerDao: IntervalTimerDao,
-    private val logger: Timber.Tree
+class ActiveTimerViewModel @Inject constructor(
+    private val timerDao: IntervalTimerDao
 ) : ViewModel() {
     val timerState: MutableStateFlow<IntervalTimerState> = MutableStateFlow(LoadingState)
     val effects: MutableSharedFlow<IntervalTimerEffects> = MutableSharedFlow()
@@ -33,13 +32,9 @@ class ActiveTimerViewModel(
     private var currentSet = 1
     private var currentRound = 1
     private var timeRemaining: Long = 0
-
-    @Inject
-    constructor(timerDao: IntervalTimerDao) : this(timerDao, Timber.tag("ActiveTimerViewModel"))
-
     fun loadTimer(timerId: Long) {
         if (timerJob == null || timer.id != timerId) {
-            logger.d("Initializing with Timer id $timerId")
+            Timber.d("Initializing with Timer id $timerId")
             viewModelScope.launch {
                 timer = timerDao.getById(timerId)
                 currentSet = timer.sets

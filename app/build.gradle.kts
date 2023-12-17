@@ -77,7 +77,7 @@ android {
 
 dependencies {
     implementation(project(":shared"))
-    wearApp(project(":wear"))
+//    wearApp(project(":wear"))
     implementation(libs.androidx.core)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.splash)

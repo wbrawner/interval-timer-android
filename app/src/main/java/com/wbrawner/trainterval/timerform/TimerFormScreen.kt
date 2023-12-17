@@ -3,20 +3,27 @@ package com.wbrawner.trainterval.timerform
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement.Absolute.spacedBy
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.wbrawner.trainterval.shared.IntervalDuration
 import com.wbrawner.trainterval.shared.IntervalTimer
+import com.wbrawner.trainterval.shared.shiftLeft
+import com.wbrawner.trainterval.shared.shiftRight
 import com.wbrawner.trainterval.shared.toIntervalDuration
 import com.wbrawner.trainterval.shared.toSeconds
 
@@ -40,9 +47,10 @@ fun TimerFormScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Cancel")
+                        Icon(imageVector = Icons.Default.Close, contentDescription = "Cancel")
                     }
-                }
+                },
+                scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
             )
         }
     ) { padding ->
@@ -105,12 +113,22 @@ fun TimerForm(
             value = title,
             onValueChange = setTitle,
             label = { Text("Title") },
+            maxLines = 1,
+            keyboardOptions = KeyboardOptions.Default.copy(
+                capitalization = KeyboardCapitalization.Words,
+                imeAction = ImeAction.Next
+            )
         )
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
             value = description,
             onValueChange = setDescription,
             label = { Text("Description") },
+            maxLines = 1,
+            keyboardOptions = KeyboardOptions.Default.copy(
+                capitalization = KeyboardCapitalization.Sentences,
+                imeAction = ImeAction.Next
+            )
         )
         DurationInput(
             modifier = Modifier.fillMaxWidth(),
@@ -153,6 +171,23 @@ fun TimerForm(
             value = cycles,
             onValueChange = setCycles,
             label = "Cycles",
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Number,
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions {
+                saveTimer(
+                    title,
+                    description,
+                    warmUp,
+                    lowIntensity,
+                    highIntensity,
+                    rest,
+                    coolDown,
+                    sets,
+                    cycles
+                )
+            }
         )
         Button(
             modifier = Modifier.fillMaxWidth(),
@@ -175,7 +210,6 @@ fun TimerForm(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DurationInput(
     modifier: Modifier,
@@ -183,20 +217,30 @@ fun DurationInput(
     value: Long,
     onValueChange: (Long) -> Unit
 ) {
-    val (input, setInput) = remember { mutableStateOf(value.toIntervalDuration().toString()) }
+    val (input, setInput) = remember { mutableStateOf(TextFieldValue(value.toIntervalDuration().toStringFull())) }
     val (isError, setError) = remember { mutableStateOf(false) }
-    // TODO: Use a triple spinner instead of the text field
     OutlinedTextField(
         modifier = modifier,
         value = input,
         onValueChange = {
-            setInput(it)
-            IntervalDuration.parse(it)
+            val parts = it.text.split(':').takeLast(3)
+            val durationString = when (parts.last().length) {
+                1 -> it.text.shiftRight()
+                2 -> it.text
+                3 -> it.text.shiftLeft()
+                else -> parts.joinToString(":")
+            }
+            IntervalDuration.parse(durationString)
                 ?.let { duration ->
                     setError(false)
+                    val newDurationString = duration.toStringFull()
+                    setInput(it.copy(text = newDurationString, selection = TextRange(newDurationString.length)))
                     onValueChange(duration.toSeconds())
                 }
-                ?: setError(true)
+                ?: run {
+                    setInput(it.copy(text = durationString, selection = TextRange(durationString.length)))
+                    setError(true)
+                }
         },
         label = { Text(label) },
         isError = isError,
@@ -207,17 +251,26 @@ fun DurationInput(
                     color = MaterialTheme.colorScheme.error
                 )
             }
-        }
+        },
+        maxLines = 1,
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = KeyboardType.Number,
+            imeAction = ImeAction.Next
+        )
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NumberInput(
     modifier: Modifier,
     label: String,
     value: Int,
-    onValueChange: (Int) -> Unit
+    onValueChange: (Int) -> Unit,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default.copy(
+        keyboardType = KeyboardType.Number,
+        imeAction = ImeAction.Next
+    ),
+    keyboardActions: KeyboardActions = KeyboardActions.Default
 ) {
     val (input, setInput) = remember { mutableStateOf(value.toString()) }
     val (isError, setError) = remember { mutableStateOf(false) }
@@ -234,7 +287,9 @@ fun NumberInput(
                 }
                 ?: setError(true)
         },
-        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+        maxLines = 1,
+        keyboardOptions = keyboardOptions,
+        keyboardActions = keyboardActions,
         label = { Text(label) },
         isError = isError,
         supportingText = {

@@ -9,6 +9,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.HiltAndroidApp
 import dagger.hilt.components.SingletonComponent
+import timber.log.Timber
 import javax.inject.Singleton
 
 @HiltAndroidApp
@@ -16,8 +17,9 @@ class TraintervalApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        val lifecycleCallbacks = TraintervalActivityLifecycleCallbacks()
-        registerActivityLifecycleCallbacks(lifecycleCallbacks)
+        if (BuildConfig.DEBUG) {
+            Timber.plant(Timber.DebugTree())
+        }
     }
 }
 
